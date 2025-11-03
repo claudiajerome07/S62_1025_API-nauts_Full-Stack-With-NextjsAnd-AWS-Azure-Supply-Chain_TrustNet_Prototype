@@ -135,3 +135,25 @@ Example placeholder:
 | Quality Assurance | All Members | Testing, bug reporting, user experience validation |
 
 ---
+
+## Code Quality Configuration
+
+### TypeScript
+We enabled strict mode to catch potential issues early:
+- `"strict": true` ensures all types are defined.
+- `"noImplicitAny": true` prevents untyped variables.
+- `"noUnusedLocals"` and `"noUnusedParameters"` clean up unused code.
+
+### ESLint + Prettier
+Our ESLint configuration extends `next/core-web-vitals` and Prettier rules to ensure clean, readable, and consistent code.
+We enforce:
+- No console logs in production.
+- Mandatory semicolons.
+- Double quotes for all strings.
+
+### Husky + lint-staged
+We use Husky and lint-staged to automatically lint and format code before commits.  
+This ensures that no badly formatted code enters our repository.
+
+### Example Output
+When committing code that violates lint rules, Husky blocks the commit until all issues are fixed.
