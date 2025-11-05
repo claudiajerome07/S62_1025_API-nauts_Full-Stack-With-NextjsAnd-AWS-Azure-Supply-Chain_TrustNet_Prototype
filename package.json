@@ -13,6 +13,17 @@
   },
   "dependencies": {
     "@prisma/client": "^6.18.0",
+
+    "next": "16.0.1",
+    "react": "19.2.0",
+    "react-dom": "19.2.0"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ]
+
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.10",
     "bcryptjs": "^3.0.3",
@@ -23,9 +34,24 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "zod": "^4.1.12"
+
   },
   "devDependencies": {
     "@types/node": "^20",
+
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9.39.0",
+    "eslint-config-next": "^16.0.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "husky": "^8.0.0",
+    "lint-staged": "^16.2.6",
+    "prettier": "^3.6.2",
+    "prisma": "^6.18.0",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "autoprefixer": "^10.4.19",
@@ -45,5 +71,6 @@
       "eslint --fix",
       "prettier --write"
     ]
+
   }
 }
