@@ -162,91 +162,65 @@ This ensures that no badly formatted code enters our repository.
 
 When committing code that violates lint rules, Husky blocks the commit until all issues are fixed.
 
-## Development Workflow.
+---
+
+# Environment Variables Configuration for TrustNet Backend
+
+This document explains the environment variables needed for the TrustNet backend, their purposes, client vs server safety, how to replicate the setup using `.env.example`, and common pitfalls avoided.
 
 ---
 
-### Branch Naming Convention
+## Purpose of Each Environment Variable
 
-### Format
+| Variable           | Purpose                                                                                  | Client-Side Safe?              |
+|--------------------|------------------------------------------------------------------------------------------|-------------------------------|
+| `DATABASE_URL`      | Connection string for the PostgreSQL database                                           | No (Server-side only)          |
+| `JWT_SECRET`        | Secret key for signing JSON Web Tokens for user authentication                           | No (Server-side only)          |
+| `NEXTAUTH_SECRET`   | Secret used for NextAuth session encryption                                             | No (Server-side only)          |
+| `REDIS_URL`         | Connection URL for Redis server used for caching and session storage                     | No (Server-side only)          |
+| `NODE_ENV`          | Defines environment mode (e.g., development, production)                                | No (Server-side only)          |
+| `UPI_SERVICE_URL`   | URL for UPI verification service (mock during dev, real endpoint in production)         | No (Server-side only)          |
+| `NEXTAUTH_URL`      | Public URL of the application, used by NextAuth for redirect callbacks                  | Yes (safe to expose if needed) |
 
-{type}/{short-description}
+---
 
-### Types
+## Server-Side vs Client-Side Access
 
-- `feat/` - New features
-- `fix/` - Bug fixes
-- `hotfix/` - Critical production fixes
-- `docs/` - Documentation updates
-- `style/` - Code style changes (formatting, etc.)
-- `refactor/` - Code refactoring
-- `test/` - Adding tests
-- `chore/` - Maintenance tasks
+- All environment variables except `NEXTAUTH_URL` are **server-side only** and must not be exposed in client-side bundles.
+- Ensure no sensitive variables have the `NEXT_PUBLIC_` prefix, as Next.js exposes those to the browser.
+- Variables without `NEXT_PUBLIC_` prefix are accessible only in API routes and server code via `process.env`.
+- This separation protects secrets like database URLs, JWT secrets, and Redis connections from client exposure.
 
-### Examples
+---
 
-- `feat/user-authentication`
-- `fix/login-validation`
-- `docs/api-endpoints`
-- `refactor/auth-system`
+## How to Replicate the Setup Using `.env.example`
 
-### PR TEMPLATE
+1. Copy `.env.example` to `.env` in your project root.
+2. Replace placeholder values with your actual credentials and secrets:
+   - Update PostgreSQL connection string (`DATABASE_URL`)
+   - Generate strong secrets for `JWT_SECRET` and `NEXTAUTH_SECRET`
+   - Configure correct Redis connection URL (`REDIS_URL`)
+   - Point `UPI_SERVICE_URL` to the appropriate service endpoint
+   - Set `NEXTAUTH_URL` to your deployed application URL
+3. Add `.env` to your `.gitignore` file to prevent committing sensitive secrets to version control.
+4. Restart your development or production server after modifying `.env` to ensure all variables load correctly.
+5. For deployment, use your cloud provider's environment variable configuration (AWS, Azure, Docker secrets, etc.) instead of local `.env`.
 
-### Description
+---
 
-<!-- Describe your changes and what problem they solve -->
+## Common Pitfalls Avoided
 
-### Type of Change
+- **Exposing secrets accidentally**: No sensitive variables are prefixed with `NEXT_PUBLIC_`, avoiding client bundle exposure.
+- **Not committing secrets**: The `.env.example` serves as a safe template only; the actual `.env` file is excluded from version control.
+- **Quotation usage**: Values with special characters or URLs are wrapped in double quotes to avoid parsing errors.
+- **Runtime accessibility**: Variables are accessed at runtime in server-side API routes, preventing build-time leakage.
+- **Clear naming and documentation**: Variable names and comments make purpose and usage explicit, preventing misconfiguration.
 
-- [ ] 🚀 New feature
-- [ ] 🐛 Bug fix
-- [ ] 📚 Documentation
-- [ ] 🎨 Style update
-- [ ] ♻️ Code refactor
-- [ ] ✅ Test addition
-- [ ] 🔧 Chore
-- [ ] ⚠️ Breaking change
+---
 
-### Checklist
+This approach ensures secure and smooth configuration of environment variables for the TrustNet backend while easing setup for other developers.
 
-- [ ] My code follows the project style guidelines
-- [ ] I have performed a self-review of my code
-- [ ] I have commented my code where necessary
-- [ ] I have updated the documentation if needed
-- [ ] My changes generate no new warnings
-- [ ] I have added tests that prove my fix is effective
-- [ ] New and existing unit tests pass locally
+---
 
-### Workflow Reflection
 
-This workflow helps because:
 
-**Code Quality:**
-
-- ESLint/Prettier catch issues early
-- Code reviews catch bugs before merging
-- Consistent patterns make code maintainable
-
-**Collaboration:**
-
-- Clear PR templates help reviewers understand changes
-- Everyone follows same branching conventions
-- CI/CD pipeline provides objective quality gates
-
-**Velocity:**
-
-- Automated checks save manual review time
-- Clear processes reduce confusion and rework
-- Quick feedback loops through CI pipeline
-
-### Screenshots (if applicable)
-
-![alt text](image.png)
-
-![alt text](image-1.png)
-
-![alt text](image-2.png)
-
-![alt text](image-3.png)
-
-![alt text](image-4.png)
