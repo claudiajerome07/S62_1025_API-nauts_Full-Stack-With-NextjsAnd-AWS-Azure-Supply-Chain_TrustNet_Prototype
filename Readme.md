@@ -51,11 +51,12 @@ TrustNet/
 ## Setup and Installation
 
 ### 1. Prerequisites
-- Node.js 20 or higher  
-- PostgreSQL 15 or higher  
-- Redis 7 or higher  
-- Docker (optional but recommended)  
-- AWS or Azure account for deployment  
+
+- Node.js 20 or higher
+- PostgreSQL 15 or higher
+- Redis 7 or higher
+- Docker (optional but recommended)
+- AWS or Azure account for deployment
 
 ### 2. Installation
 
@@ -76,12 +77,10 @@ npx prisma migrate dev
 Seed initial data (optional)
 npx prisma db seed
 
-
 ### 3. Running Locally
 
 Start the Next.js development server
 npm run dev
-
 
 Visit http://localhost:3000 to view the application.
 
@@ -90,17 +89,16 @@ Visit http://localhost:3000 to view the application.
 Build and run containers
 docker-compose up --build
 
-
 ---
 
 ## Reflection: Structural Design Rationale
 
-The structure and technologies were chosen to maximize modularity, scalability, and performance across future sprints.  
+The structure and technologies were chosen to maximize modularity, scalability, and performance across future sprints.
 
-- Next.js 14 provides full-stack capabilities with built-in API routes, ensuring frontend and backend alignment.  
-- PostgreSQL with Prisma offers a robust ORM layer and easily maintainable schema evolution.  
-- Redis caching enhances performance for analytics and trust score computations.  
-- Docker ensures consistent development and production environments.  
+- Next.js 14 provides full-stack capabilities with built-in API routes, ensuring frontend and backend alignment.
+- PostgreSQL with Prisma offers a robust ORM layer and easily maintainable schema evolution.
+- Redis caching enhances performance for analytics and trust score computations.
+- Docker ensures consistent development and production environments.
 
 This structure supports collaborative scaling for future sprint pipelines where each subsystem (analytics, verification, dashboard) can evolve independently with minimal coupling.
 
@@ -110,7 +108,7 @@ This structure supports collaborative scaling for future sprint pipelines where 
 
 Add a screenshot of your local application running below.
 
-Example placeholder:  
+Example placeholder:
 
 ![TrustNet Dashboard](dashboard.png)
 
@@ -118,44 +116,50 @@ Example placeholder:
 
 ## Future Enhancements
 
-- Mobile app integration for field agents and vendors  
-- Advanced analytics with AI-driven trust prediction  
-- Multi-language support for vernacular inclusivity  
-- Integration with government micro-loan identity networks  
+- Mobile app integration for field agents and vendors
+- Advanced analytics with AI-driven trust prediction
+- Multi-language support for vernacular inclusivity
+- Integration with government micro-loan identity networks
 
 ---
 
 ## Contributors
 
-| Role | Team Member | Key Responsibilities |
-|------|--------------|----------------------|
-| Frontend Lead | Claudia Jerome | Next.js UI components, responsive design, analytics dashboard |
-| Backend Lead | Tejas Philip Thomas | Database design, API routes, UPI verification system |
-| Full-Stack & DevOps | Isaac Reji | Prisma schema, Redis integration, Docker setup, deployment |
-| Quality Assurance | All Members | Testing, bug reporting, user experience validation |
+| Role                | Team Member         | Key Responsibilities                                          |
+| ------------------- | ------------------- | ------------------------------------------------------------- |
+| Frontend Lead       | Claudia Jerome      | Next.js UI components, responsive design, analytics dashboard |
+| Backend Lead        | Tejas Philip Thomas | Database design, API routes, UPI verification system          |
+| Full-Stack & DevOps | Isaac Reji          | Prisma schema, Redis integration, Docker setup, deployment    |
+| Quality Assurance   | All Members         | Testing, bug reporting, user experience validation            |
 
 ---
 
 ## Code Quality Configuration
 
 ### TypeScript
+
 We enabled strict mode to catch potential issues early:
+
 - `"strict": true` ensures all types are defined.
 - `"noImplicitAny": true` prevents untyped variables.
 - `"noUnusedLocals"` and `"noUnusedParameters"` clean up unused code.
 
 ### ESLint + Prettier
+
 Our ESLint configuration extends `next/core-web-vitals` and Prettier rules to ensure clean, readable, and consistent code.
 We enforce:
+
 - No console logs in production.
 - Mandatory semicolons.
 - Double quotes for all strings.
 
 ### Husky + lint-staged
+
 We use Husky and lint-staged to automatically lint and format code before commits.  
 This ensures that no badly formatted code enters our repository.
 
 ### Example Output
+
 When committing code that violates lint rules, Husky blocks the commit until all issues are fixed.
 
 ---
