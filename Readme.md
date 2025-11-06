@@ -328,6 +328,98 @@ Why this matters:
 This setup ensures consistent deployments and protects sensitive credentials across environments.
 No real secrets are ever committed to GitHub.
 
+---
+
+# Prisma Database Migrations and Seed Scripts
+
+## Overview
+
+This guide explains how to use Prisma ORM for database migrations and seed scripts to ensure all environments have a consistent database schema and initial data. It covers setup, migration management, seeding scripts, verifying data, and rollback safety.
+
+## Setup
+
+1. Ensure that **Prisma** and **PostgreSQL** are configured in your project.
+2. Initialize Prisma:
+      
+   - npx prisma init
+
+## Database Migrations
+
+### Create and Apply First Migration
+
+Generate migration files, apply them to the database, and update the Prisma Client:
+
+   - npx prisma migrate dev --name init_schema
+
+### Modify or Add a New Migration
+
+To modify the schema or add a new table:
+
+   - npx prisma migrate dev --name add_project_table
+
+
+### Reset or Rollback Database
+
+Reset the database, re-apply all migrations, and optionally re-run the seed script:
+
+   - npx prisma migrate reset
+
+
+## Seed Script
+
+1. Create the file `prisma/seed.ts`:
+
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
+
+async function main() {
+await prisma.user.createMany({
+data: [
+{ name: 'Alice', email: 'alice@example.com' },
+{ name: 'Bob', email: 'bob@example.com' },
+],
+});
+console.log('Seed data inserted successfully');
+}
+
+main()
+.then(async () => await prisma.$disconnect())
+.catch(async (e) => {
+console.error(e);
+await prisma.$disconnect();
+process.exit(1);
+});
+
+
+2. Add the seed command to your `package.json`:
+
+"prisma": {
+"seed": "ts-node prisma/seed.ts"
+}
+
+
+3. Run the seed script:
+
+   - npx prisma db seed
+
+
+## Verify the Data
+
+Use Prisma Studio to check that the seed data has been inserted:
+
+   - npx prisma studio
+
+
+## Rollback and Safety
+
+- Always test all migrations locally before applying to production.
+- Use backups and staging environments for safety.
+- Treat migrations as version-controlled code; do not edit existing migrations after they’ve been applied in production.
+
+## Sample output logs
+
+![alt text](image-5.png)
+
 ## Database Schema
 
 Our PostgreSQL schema enables core features:
