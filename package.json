@@ -24,7 +24,7 @@
     "*.{ts,tsx,js,jsx}": [
       "eslint --fix",
       "prettier --write"
-    ]
+    ],
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.10",
     "bcryptjs": "^3.0.3",
@@ -54,11 +54,5 @@
     "prisma": "^6.18.0",
     "tailwindcss": "^3.4.18",
     "typescript": "^5.3.3"
-  },
-  "lint-staged": {
-    "*.{ts,tsx,js,jsx}": [
-      "eslint --fix",
-      "prettier --write"
-    ]
   }
 }
