@@ -452,6 +452,33 @@ Quick Start
 4. npm run db:studio # Database GUI
 5. The schema supports TrustNet's mission of building digital credibility for local businesses through community-powered verification.
 
+
+## 🧾 Global API Response Handler
+
+### Unified Response Structure
+All API responses in this project follow a consistent format to improve developer experience, debugging, and observability.
+
+**Example Success Response**
+```json
+{
+   "success": true,
+  "message": "User created successfully",
+  "data": { "id": 12, "name": "Charlie" },
+  "timestamp": "2025-11-07T10:00:00Z"
+}
+
+``` 
+
+**Example Error Response**
+
+```json
+{
+  "success": false,
+  "message": "Missing required field: name",
+  "error": { "code": "VALIDATION_ERROR" },
+  "timestamp": "2025-11-07T10:00:00Z"
+}
+```
 ⚙️ How the Dockerfile Works
 The Dockerfile defines how the TrustNet Next.js application is built, bundled, and run inside a lightweight containerized environment.
 Step-by-step breakdown:
