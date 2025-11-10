@@ -340,7 +340,6 @@ This guide explains how to use Prisma ORM for database migrations and seed scrip
 
 1. Ensure that **Prisma** and **PostgreSQL** are configured in your project.
 2. Initialize Prisma:
-      
    - npx prisma init
 
 ## Database Migrations
@@ -349,21 +348,19 @@ This guide explains how to use Prisma ORM for database migrations and seed scrip
 
 Generate migration files, apply them to the database, and update the Prisma Client:
 
-   - npx prisma migrate dev --name init_schema
+- npx prisma migrate dev --name init_schema
 
 ### Modify or Add a New Migration
 
 To modify the schema or add a new table:
 
-   - npx prisma migrate dev --name add_project_table
-
+- npx prisma migrate dev --name add_project_table
 
 ### Reset or Rollback Database
 
 Reset the database, re-apply all migrations, and optionally re-run the seed script:
 
-   - npx prisma migrate reset
-
+- npx prisma migrate reset
 
 ## Seed Script
 
@@ -390,25 +387,20 @@ await prisma.$disconnect();
 process.exit(1);
 });
 
-
 2. Add the seed command to your `package.json`:
 
 "prisma": {
 "seed": "ts-node prisma/seed.ts"
 }
 
-
 3. Run the seed script:
-
    - npx prisma db seed
-
 
 ## Verify the Data
 
 Use Prisma Studio to check that the seed data has been inserted:
 
-   - npx prisma studio
-
+- npx prisma studio
 
 ## Rollback and Safety
 
@@ -452,22 +444,22 @@ Quick Start
 4. npm run db:studio # Database GUI
 5. The schema supports TrustNet's mission of building digital credibility for local businesses through community-powered verification.
 
-
 ## 🧾 Global API Response Handler
 
 ### Unified Response Structure
+
 All API responses in this project follow a consistent format to improve developer experience, debugging, and observability.
 
 **Example Success Response**
+
 ```json
 {
-   "success": true,
+  "success": true,
   "message": "User created successfully",
   "data": { "id": 12, "name": "Charlie" },
   "timestamp": "2025-11-07T10:00:00Z"
 }
-
-``` 
+```
 
 **Example Error Response**
 
@@ -479,39 +471,40 @@ All API responses in this project follow a consistent format to improve develope
   "timestamp": "2025-11-07T10:00:00Z"
 }
 ```
+
 ⚙️ How the Dockerfile Works
 The Dockerfile defines how the TrustNet Next.js application is built, bundled, and run inside a lightweight containerized environment.
 Step-by-step breakdown:
 Base Image –
 
- FROM node:20-alpine
- Uses a minimal Node.js 20 image for efficiency and security. The alpine variant ensures smaller image size and faster builds.
+FROM node:20-alpine
+Uses a minimal Node.js 20 image for efficiency and security. The alpine variant ensures smaller image size and faster builds.
 
 Working Directory Setup –
 
- WORKDIR /app
- Sets /app as the directory inside the container where all files and commands will execute.
+WORKDIR /app
+Sets /app as the directory inside the container where all files and commands will execute.
 
 Dependency Installation –
 
- COPY package*.json ./
+COPY package\*.json ./
 RUN npm install
- Copies dependency files and installs them first, taking advantage of Docker layer caching — so dependencies aren’t reinstalled every build unless they change.
+Copies dependency files and installs them first, taking advantage of Docker layer caching — so dependencies aren’t reinstalled every build unless they change.
 
 Project Build –
 
- COPY . .
+COPY . .
 RUN npm run build
- Copies the rest of the source code and builds the production-ready Next.js app.
+Copies the rest of the source code and builds the production-ready Next.js app.
 
 Expose Port & Run App –
 
- EXPOSE 3000
+EXPOSE 3000
 CMD ["npm", "run", "start"]
- Exposes port 3000 (the default Next.js port) and launches the app using the production build.
+Exposes port 3000 (the default Next.js port) and launches the app using the production build.
 
 ✅ Outcome:
- When built, this container runs the TrustNet app with all dependencies isolated — ready for deployment or local development.
+When built, this container runs the TrustNet app with all dependencies isolated — ready for deployment or local development.
 
 🧱 How the Docker Compose File Works
 The docker-compose.yml file orchestrates multiple containers — the app, PostgreSQL database, and Redis cache — to work together in one cohesive environment.
@@ -531,16 +524,17 @@ The environment section in the app container shares connection URLs for the data
 
 Example:
 environment:
-  - DATABASE_URL=postgres://postgres:password@db:5432/mydb
-  - REDIS_URL=redis://redis:6379
+
+- DATABASE_URL=postgres://postgres:password@db:5432/mydb
+- REDIS_URL=redis://redis:6379
 
 Here, db and redis refer to service names, not IPs — Docker automatically resolves them through the shared network.
 
 🌐 Network Configuration
 The file defines a custom bridge network:
 networks:
-  localnet:
-    driver: bridge
+localnet:
+driver: bridge
 
 All containers (app, db, redis) connect to localnet, allowing secure internal communication via service names:
 App ↔ Database: postgres://postgres:password@db:5432/mydb
@@ -548,16 +542,17 @@ App ↔ Database: postgres://postgres:password@db:5432/mydb
 App ↔ Redis: redis://redis:6379
 
 Why this matters:
- It isolates containers from the host network, improving security and stability, while allowing seamless inter-service communication.
+It isolates containers from the host network, improving security and stability, while allowing seamless inter-service communication.
 
 💾 Volume Setup
 Persistent data is managed using Docker volumes:
 volumes:
-  db_data:
+db_data:
 
 The PostgreSQL service uses this volume:
 volumes:
-  - db_data:/var/lib/postgresql/data
+
+- db_data:/var/lib/postgresql/data
 
 This ensures:
 Database data persists across container restarts.
@@ -565,7 +560,6 @@ Database data persists across container restarts.
 Developers can rebuild containers without losing local data.
 
 The database remains isolated from the host file system, reducing risk of corruption.
-
 
 🔐 Environment Variable Sharing
 Environment variables are passed through the environment: section in docker-compose.yml.
@@ -578,10 +572,49 @@ For production and CI/CD, these values are replaced with secrets managed via AWS
 
 Example:
 environment:
-  - NODE_ENV=production
-  - DATABASE_URL=${DATABASE_URL}
-  - REDIS_URL=${REDIS_URL}
+
+- NODE_ENV=production
+- DATABASE_URL=${DATABASE_URL}
+- REDIS_URL=${REDIS_URL}
 
 (Using ${VARIABLE} allows automatic loading from a .env file.)
 
+## API ROUTE STRUCTURE
 
+app/
+└── api/
+├── auth/
+│ ├── register/
+│ │ └── route.ts
+│ ├── login/
+│ │ └── route.ts
+│ └── verify-otp/
+│ └── route.ts
+├── users/
+│ ├── route.ts
+│ └── [id]/
+│ └── route.ts
+├── businesses/
+│ ├── route.ts
+│ └── [id]/
+│ ├── route.ts
+│ ├── reviews/
+│ │ └── route.ts
+│ ├── endorsements/
+│ │ └── route.ts
+│ └── analytics/
+│ └── route.ts
+├── reviews/
+│ └── [id]/
+│ └── route.ts
+├── upi/
+│ ├── verify/
+│ │ └── route.ts
+│ └── transactions/
+│ └── route.ts
+└── search/
+└── route.ts
+
+![alt text](image-6.png)
+
+![alt text](image-7.png)
