@@ -1,35 +1,27 @@
-import { NextRequest, NextResponse } from "next/server";
+// app/api/auth/login/route.ts
+import { NextRequest } from "next/server";
 import { z } from "zod";
+import { sendSuccess } from "@/lib/responseHandler";
+import { withErrorHandler } from "@/lib/errorHandler";
 
 const loginSchema = z.object({
-  phone: z.string().min(10),
+  phone: z.string().min(10, "Phone number must be at least 10 digits"),
 });
 
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const { phone } = loginSchema.parse(body);
+async function POST(request: NextRequest) {
+  const body = await request.json();
+  const { phone } = loginSchema.parse(body);
 
-    // In production, send OTP via SMS service
-    // For development, return success with mock OTP
-    const mockOtp = "123456";
+  const mockOtp = "123456";
 
-    return NextResponse.json({
-      message: "OTP sent successfully",
-      // Remove this in production
+  return sendSuccess(
+    {
       debugOtp: process.env.NODE_ENV === "development" ? mockOtp : undefined,
-    });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: "Invalid phone number" },
-        { status: 400 }
-      );
-    }
-
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
-  }
+    },
+    "OTP sent successfully"
+  );
 }
+
+// Use the error handler wrapper
+export const POSTHandler = withErrorHandler(POST, "auth-login");
+export { POSTHandler as POST };

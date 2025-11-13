@@ -1,3 +1,4 @@
+// lib/customErrors.ts
 export class AppError extends Error {
   constructor(
     message: string,
@@ -38,5 +39,11 @@ export class AuthorizationError extends AppError {
 export class DatabaseError extends AppError {
   constructor(message: string = "Database operation failed", details?: any) {
     super(message, 500, "DATABASE_ERROR", details);
+  }
+}
+
+export class ConflictError extends AppError {
+  constructor(message: string = "Resource already exists") {
+    super(message, 409, "CONFLICT_ERROR");
   }
 }

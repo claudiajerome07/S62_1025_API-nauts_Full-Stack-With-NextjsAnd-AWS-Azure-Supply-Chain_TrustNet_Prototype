@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "../../../lib/prisma";
 import { z } from "zod";
+import { sendSuccess } from "@/lib/responseHandler";
+import {
+  ValidationError,
+  ConflictError,
+  DatabaseError,
+} from "@/lib/customErrors";
+import { withErrorHandler } from "@/lib/errorHandler";
 
 const registerSchema = z.object({
   phone: z.string().min(10),
@@ -9,10 +16,26 @@ const registerSchema = z.object({
   role: z.enum(["CUSTOMER", "BUSINESS_OWNER"]).default("CUSTOMER"),
 });
 
-export async function POST(request: NextRequest) {
-  try {
+async function POST(request: NextRequest) {
+  
     const body = await request.json();
-    const { phone, name, businessName, role } = registerSchema.parse(body);
+
+    // Parse and validate with custom error handling
+    let validatedData;
+    try {
+      validatedData = registerSchema.parse(body);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const formattedErrors = error.errors.map((err) => ({
+          field: err.path.join("."),
+          message: err.message,
+        }));
+        throw new ValidationError("Validation failed", formattedErrors);
+      }
+      throw error;
+    }
+
+    const { phone, name, businessName, role } = validatedData;
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
@@ -20,10 +43,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (existingUser) {
-      return NextResponse.json(
-        { error: "User already exists with this phone number" },
-        { status: 400 }
-      );
+      throw new ConflictError("User already exists with this phone number");
     }
 
     // Create user
@@ -48,9 +68,8 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    return NextResponse.json(
+    return sendSuccess(
       {
-        message: "User registered successfully",
         user: {
           id: user.id,
           phone: user.phone,
@@ -59,20 +78,10 @@ export async function POST(request: NextRequest) {
         },
         business,
       },
-      { status: 201 }
+      "User registered successfully",
+      201
     );
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: "Invalid input data", details: error.errors },
-        { status: 400 }
-      );
-    }
+  } 
 
-    console.error("Registration error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
-  }
-}
+  export const POSTHandler = withErrorHandler(POST, "auth-register");
+  export { POSTHandler as POST };

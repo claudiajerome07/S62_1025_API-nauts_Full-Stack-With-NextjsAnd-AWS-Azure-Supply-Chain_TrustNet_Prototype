@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { sendSuccess } from "@/lib/responseHandler";
+import {
+  ValidationError,
+  NotFoundError,
+  DatabaseError,
+} from "@/lib/customErrors";
+import { withErrorHandler } from "@/lib/errorHandler";
+
 
 const reviewSchema = z.object({
   rating: z.number().min(1).max(5),
@@ -14,11 +22,11 @@ export async function generateStaticParams() {
 }
 
 // FIX: Use the correct parameter structure
-export async function GET(
+async function GET(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
-  try {
+  
     // FIX: Await the params
     const params = await context.params;
     const { id } = params;
@@ -42,7 +50,7 @@ export async function GET(
       prisma.review.count({ where: { businessId: id } }),
     ]);
 
-    return NextResponse.json({
+    return sendSuccess({
       reviews,
       pagination: {
         page,
@@ -51,20 +59,14 @@ export async function GET(
         pages: Math.ceil(total / limit),
       },
     });
-  } catch (error) {
-    console.error("Get reviews error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
-  }
+  
 }
 
-export async function POST(
+async function POST(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
-  try {
+  
     // FIX: Await the params
     const params = await context.params;
     const { id } = params;
@@ -78,10 +80,7 @@ export async function POST(
     });
 
     if (!business) {
-      return NextResponse.json(
-        { error: "Business not found" },
-        { status: 404 }
-      );
+      throw new NotFoundError("Business");
     }
 
     const review = await prisma.review.create({
@@ -100,43 +99,41 @@ export async function POST(
     // Update business analytics
     await updateBusinessAnalytics(id);
 
-    return NextResponse.json(review, { status: 201 });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: "Invalid review data", details: error.errors },
-        { status: 400 }
-      );
-    }
-
-    console.error("Create review error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
-  }
+    return sendSuccess(review, "Review created successfully", 201);
+  
 }
 
 async function updateBusinessAnalytics(businessId: string) {
-  const reviews = await prisma.review.findMany({
-    where: { businessId },
-  });
+  try {
+    const reviews = await prisma.review.findMany({
+      where: { businessId },
+    });
 
-  const averageRating =
-    reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length;
+    const averageRating =
+      reviews.length > 0
+        ? reviews.reduce((sum, review) => sum + review.rating, 0) /
+          reviews.length
+        : 0;
 
-  await prisma.businessAnalytics.upsert({
-    where: { businessId },
-    update: {
-      totalReviews: reviews.length,
-      averageRating,
-      lastUpdated: new Date(),
-    },
-    create: {
-      businessId,
-      totalReviews: reviews.length,
-      averageRating,
-      lastUpdated: new Date(),
-    },
-  });
+    await prisma.businessAnalytics.upsert({
+      where: { businessId },
+      update: {
+        totalReviews: reviews.length,
+        averageRating,
+        lastUpdated: new Date(),
+      },
+      create: {
+        businessId,
+        totalReviews: reviews.length,
+        averageRating,
+        lastUpdated: new Date(),
+      },
+    });
+  } catch (error) {
+    throw new DatabaseError("Failed to update business analytics", error);
+  }
 }
+
+export const GETHandler = withErrorHandler(GET, "business-reviews-get");
+export const POSTHandler = withErrorHandler(POST, "business-reviews-create");
+export { GETHandler as GET, POSTHandler as POST };

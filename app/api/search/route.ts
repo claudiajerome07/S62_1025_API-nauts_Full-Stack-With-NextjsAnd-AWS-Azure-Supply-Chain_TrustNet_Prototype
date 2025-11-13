@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { sendSuccess } from "@/lib/responseHandler";
+import { DatabaseError } from "@/lib/customErrors";
+import { withErrorHandler } from "@/lib/errorHandler";
 
-export async function GET(request: NextRequest) {
-  try {
+async function GET(request: NextRequest) {
+  
     const { searchParams } = new URL(request.url);
     const query = searchParams.get("q");
     const category = searchParams.get("category");
@@ -41,7 +44,7 @@ export async function GET(request: NextRequest) {
       prisma.business.count({ where }),
     ]);
 
-    return NextResponse.json({
+    return sendSuccess({
       businesses,
       pagination: {
         page,
@@ -50,11 +53,8 @@ export async function GET(request: NextRequest) {
         pages: Math.ceil(total / limit),
       },
     });
-  } catch (error) {
-    console.error("Search error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
-  }
+  
 }
+
+export const GETHandler = withErrorHandler(GET, "search-businesses");
+export { GETHandler as GET };

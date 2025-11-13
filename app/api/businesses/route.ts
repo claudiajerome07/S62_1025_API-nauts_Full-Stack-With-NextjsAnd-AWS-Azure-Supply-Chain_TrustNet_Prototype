@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { sendSuccess } from "@/lib/responseHandler";
+import { ValidationError, DatabaseError } from "@/lib/customErrors";
+import { withErrorHandler } from "@/lib/errorHandler";
 
 const businessSchema = z.object({
   name: z.string().min(1),
@@ -19,8 +22,8 @@ const businessSchema = z.object({
   location: z.string().optional(),
 });
 
-export async function GET(request: NextRequest) {
-  try {
+async function GET(request: NextRequest) {
+ 
     const { searchParams } = new URL(request.url);
     const page = Number(searchParams.get("page")) || 1;
     const limit = Number(searchParams.get("limit")) || 10;
@@ -50,7 +53,7 @@ export async function GET(request: NextRequest) {
       prisma.business.count({ where }),
     ]);
 
-    return NextResponse.json({
+    return sendSuccess({
       businesses,
       pagination: {
         page,
@@ -59,17 +62,10 @@ export async function GET(request: NextRequest) {
         pages: Math.ceil(total / limit),
       },
     });
-  } catch (error) {
-    console.error("Get businesses error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
-  }
+  
 }
 
-export async function POST(request: NextRequest) {
-  try {
+async function POST(request: NextRequest) {
     const body = await request.json();
     const businessData = businessSchema.parse(body);
 
@@ -85,19 +81,10 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(business, { status: 201 });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: "Invalid business data", details: error.errors },
-        { status: 400 }
-      );
-    }
-
-    console.error("Create business error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
-  }
+    return sendSuccess(business, "Business created successfully", 201);
+ 
 }
+
+export const GETHandler = withErrorHandler(GET, "businesses-get");
+export const POSTHandler = withErrorHandler(POST, "businesses-create");
+export { GETHandler as GET, POSTHandler as POST };

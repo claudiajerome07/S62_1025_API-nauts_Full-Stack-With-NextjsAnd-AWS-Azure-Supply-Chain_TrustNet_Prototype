@@ -1,6 +1,9 @@
 // app/api/auth/verify-otp/route.ts
 import { NextResponse } from "next/server";
 import admin from "firebase-admin";
+import { sendSuccess, sendError } from "@/lib/responseHandler";
+import { ValidationError, AuthenticationError } from "@/lib/customErrors";
+import { withErrorHandler } from "@/lib/errorHandler";
 
 if (!admin.apps.length) {
   admin.initializeApp({
@@ -14,17 +17,25 @@ if (!admin.apps.length) {
 }
 
 export async function POST(req: Request) {
-  try {
+
     const { idToken } = await req.json();
-    if (!idToken) return NextResponse.json({ success: false, message: "Missing token" }, { status: 400 });
+    if (!idToken) {
+      throw new ValidationError("ID token is required");
+    }
 
     const decoded = await admin.auth().verifyIdToken(idToken);
     // decoded contains uid, phone_number, email, etc.
     // Here: create or fetch a user in your DB, create app session cookie/jwt if desired.
 
-    return NextResponse.json({ success: true, user: decoded });
-  } catch (err: any) {
-    console.error("verify-otp error", err);
-    return NextResponse.json({ success: false, message: err.message || "Verification failed" }, { status: 401 });
-  }
+    return sendSuccess(
+      {
+        user: {
+          uid: decoded.uid,
+          phone: decoded.phone_number,
+          email: decoded.email,
+        },
+      },
+      "OTP verified successfully"
+    );
+  
 }
