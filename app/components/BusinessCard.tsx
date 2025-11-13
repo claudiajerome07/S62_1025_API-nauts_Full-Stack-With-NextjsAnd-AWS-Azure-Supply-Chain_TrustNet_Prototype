@@ -95,7 +95,7 @@ export default function BusinessCard({ business }: BusinessCardProps) {
 
         {/* Action Button */}
         <Link
-          href={`/business/${id}`}
+          href={`/businesses/${id}`}
           className="w-full bg-blue-600 text-white text-center py-2 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors duration-200 block"
         >
           View Profile
