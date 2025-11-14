@@ -8,7 +8,13 @@ import {
   DatabaseError,
 } from "@/lib/customErrors";
 import { withErrorHandler } from "@/lib/errorHandler";
+import { sanitizeInput } from "../../../../../utils/sanitize"
 
+export default async function handler(req, res) {
+  const cleanComment = sanitizeInput(req.body.comment);
+  await prisma.comments.create({ data: { text: cleanComment } });
+  res.status(200).json({ message: 'Comment added safely!' });
+}
 
 const reviewSchema = z.object({
   rating: z.number().min(1).max(5),

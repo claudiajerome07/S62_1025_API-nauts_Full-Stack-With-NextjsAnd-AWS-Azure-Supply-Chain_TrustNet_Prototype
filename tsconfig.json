@@ -33,6 +33,6 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-, "app/users/loading.js"  ],
+, "app/users/loading.js", "utils/sanitize.js"  ],
   "exclude": ["node_modules"]
 }
