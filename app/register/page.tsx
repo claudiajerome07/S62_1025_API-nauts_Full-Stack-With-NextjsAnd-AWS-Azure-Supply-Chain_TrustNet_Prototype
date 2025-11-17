@@ -255,7 +255,7 @@ export default function Register() {
                   value={formData.phone}
                   onChange={handlePhoneChange}
                   className="block w-full pl-14 pr-4 py-3 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="9876543210"
+                  placeholder="XXXXXXXXXX"
                   pattern="[\+]?[0-9]{10,13}"
                   title="Please enter a valid phone number"
                   inputMode="numeric"

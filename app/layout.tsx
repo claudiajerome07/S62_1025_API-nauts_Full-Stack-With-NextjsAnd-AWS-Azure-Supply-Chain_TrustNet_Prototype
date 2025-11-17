@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter, Roboto_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "../components/Navbar";
+import { AuthProvider } from "../context/authContext";
+import { UIProvider } from "../context/UIContext";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -27,8 +29,12 @@ export default function RootLayout({
   return (
     <html lang="en" className="transition-colors duration-300">
       <body className={`${inter.variable} ${robotoMono.variable} antialiased bg-[#f5f8ff] text-gray-900 dark:bg-gray-950 dark:text-gray-100 transition-colors duration-300`}>
-        <Navbar />
-        {children}
+        <AuthProvider>
+          <UIProvider>
+            <Navbar />
+            {children}
+          </UIProvider>
+        </AuthProvider>
       </body>
     </html>
   );

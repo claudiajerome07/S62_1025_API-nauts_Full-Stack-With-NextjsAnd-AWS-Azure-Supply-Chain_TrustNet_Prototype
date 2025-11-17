@@ -699,3 +699,14 @@ app/
 ![alt text](image-6.png)
 
 ![alt text](image-7.png)
+
+
+## Project Context Architecture Overview
+
+This project uses React Context API to manage global application state. Two major contexts are used:
+
+  1. AuthContext — Manages user authentication and session state.
+
+  2. UIContext — Manages global UI behavior such as sidebar toggling.
+
+These contexts allow different parts of the app (Navbar, pages, components) to access shared state without prop drilling, improving scalability and maintainability.
