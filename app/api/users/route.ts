@@ -1,15 +1,25 @@
-import { prisma } from "../../lib/prisma";
 import { NextResponse } from "next/server";
-import { sendSuccess } from "@/lib/responseHandler";
-import { DatabaseError } from "@/lib/customErrors";
-import { withErrorHandler } from "@/lib/errorHandler";
+import { prisma } from "@/lib/prisma";
+import redis from "@/lib/redis";
 
-async function GET() {
-  
+export async function GET() {
+  try {
+    const cacheKey = "users:list";
+    const cachedData = await redis.get(cacheKey);
+
+    if (cachedData) {
+      console.log("Cache Hit");
+      return NextResponse.json(JSON.parse(cachedData));
+    }
+
+    console.log("Cache Miss - Fetching from DB");
     const users = await prisma.user.findMany();
-    return sendSuccess({ users });
-  
-}
 
-export const GETHandler = withErrorHandler(GET, "users-get");
-export { GETHandler as GET };
+    // Cache data for 60 seconds (TTL)
+    await redis.set(cacheKey, JSON.stringify(users), "EX", 60);
+
+    return NextResponse.json(users);
+  } catch (error) {
+    return NextResponse.json({ success: false, message: "Failed to fetch users", error }, { status: 500 });
+  }
+}
