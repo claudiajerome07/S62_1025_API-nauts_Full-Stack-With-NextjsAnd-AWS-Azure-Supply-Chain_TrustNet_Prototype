@@ -2,11 +2,11 @@ import { NextResponse } from "next/server";
 import { logger } from "./logger";
 import {
   AppError,
-  ValidationError,
-  NotFoundError,
-  AuthenticationError,
-  AuthorizationError,
-  DatabaseError,
+  // ValidationError,
+  // NotFoundError,
+  // AuthenticationError,
+  // AuthorizationError,
+  // DatabaseError,
 } from "./customErrors";
 
 export function handleError(error: any, context: string) {

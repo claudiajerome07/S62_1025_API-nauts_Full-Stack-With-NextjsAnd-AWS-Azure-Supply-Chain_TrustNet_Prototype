@@ -24,9 +24,9 @@ function createRedisClient() {
       port: parseInt(url.port) || 6379,
       password: password,
       tls: {}, // Upstash requires TLS
-      retryDelayOnFailover: 100,
       maxRetriesPerRequest: 3,
       lazyConnect: true,
+      connectTimeout: 10000,
     });
   }
   // Check if it's local Redis
@@ -34,17 +34,16 @@ function createRedisClient() {
     console.log("🔗 Connecting to Local Redis...");
     return new Redis(redisUrl);
   }
+
   // Other cloud Redis services
   else {
     console.log("🔗 Connecting to Cloud Redis...");
     return new Redis(redisUrl, {
       connectTimeout: 10000,
-      retryDelayOnFailover: 100,
-      retryStrategy: (times) => Math.min(times * 50, 2000),
+      maxRetriesPerRequest: 3,
     });
   }
 }
-
 // Mock Redis for development when no Redis is available
 function createMockRedis() {
   console.log("🔗 Using Mock Redis (development mode)");
@@ -56,7 +55,7 @@ function createMockRedis() {
       mockData.set(key, value);
       return Promise.resolve("OK");
     },
-    setex: (key: string, ttl: number, value: any) => {
+    setex: (key: string, value: any) => {
       mockData.set(key, value);
       // Note: Mock doesn't actually expire, but that's fine for dev
       return Promise.resolve("OK");
@@ -84,6 +83,10 @@ function createMockRedis() {
       } // No-op for errors in mock
     },
     disconnect: () => Promise.resolve(),
+    flushall: () => {
+      mockData.clear();
+      return Promise.resolve("OK");
+    },
   } as any;
 }
 
@@ -94,7 +97,7 @@ redis.on("connect", () => {
   console.log("✅ Redis connected successfully");
 });
 
-redis.on("error", (error) => {
+redis.on("error", (error: unknown) => {
   console.error("❌ Redis connection error:", error);
 });
 

@@ -44,10 +44,14 @@ export async function GET() {
       message: "Query optimization utilities working correctly!",
     });
   } catch (error) {
+    // Handle the error safely - TypeScript knows error is 'unknown'
+    const errorMessage =
+      error instanceof Error ? error.message : "An unknown error occurred";
+
     return NextResponse.json(
       {
         success: false,
-        error: error.message,
+        error: errorMessage,
         message: "Query optimization test failed",
       },
       { status: 500 }

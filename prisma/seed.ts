@@ -60,7 +60,9 @@ async function main() {
     },
   });
 
-  console.log(`Created users: ${user1.name}, ${user2.name}, ${customer1.name}, ${customer2.name}`);
+  console.log(
+    `Created users: ${user1.name}, ${user2.name}, ${customer1.name}, ${customer2.name}`
+  );
 
   // Create sample businesses - REMOVE the hardcoded IDs, let Prisma generate them
   const business1 = await prisma.business.create({
@@ -162,10 +164,12 @@ async function main() {
     },
   });
 
-  console.log(`Created ${[endorsement1, endorsement2, endorsement3].length} endorsements`);
+  console.log(
+    `Created ${[endorsement1, endorsement2, endorsement3].length} endorsements`
+  );
 
-  // Create analytics
-  const analytics1 = await prisma.businessAnalytics.create({
+  // Create analytics - remove unused variable declarations
+  await prisma.businessAnalytics.create({
     data: {
       totalReviews: 2,
       averageRating: 4.5,
@@ -177,7 +181,7 @@ async function main() {
     },
   });
 
-  const analytics2 = await prisma.businessAnalytics.create({
+  await prisma.businessAnalytics.create({
     data: {
       totalReviews: 1,
       averageRating: 4.0,
@@ -191,8 +195,8 @@ async function main() {
 
   console.log(`Created analytics for ${business1.name} and ${business2.name}`);
 
-  // Create sample UPI transactions
-  const upiTransaction1 = await prisma.uPI_Transaction.create({
+  // Create sample UPI transactions - remove unused variable declarations
+  await prisma.uPI_Transaction.create({
     data: {
       upiId: "customer1@upi",
       amount: 250.75,
@@ -203,7 +207,7 @@ async function main() {
     },
   });
 
-  const upiTransaction2 = await prisma.uPI_Transaction.create({
+  await prisma.uPI_Transaction.create({
     data: {
       upiId: "customer2@upi",
       amount: 120.5,
@@ -214,7 +218,7 @@ async function main() {
     },
   });
 
-  const upiTransaction3 = await prisma.uPI_Transaction.create({
+  await prisma.uPI_Transaction.create({
     data: {
       upiId: "customer3@upi",
       amount: 450.0,
@@ -225,7 +229,7 @@ async function main() {
     },
   });
 
-  console.log(`Created ${[upiTransaction1, upiTransaction2, upiTransaction3].length} UPI transactions`);
+  console.log(`Created 3 UPI transactions`);
 
   console.log("Seeding finished successfully!");
   console.log("Summary:");

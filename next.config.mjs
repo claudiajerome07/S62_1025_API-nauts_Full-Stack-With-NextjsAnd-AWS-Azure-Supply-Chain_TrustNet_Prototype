@@ -1,31 +1,20 @@
+// next.config.mjs
 const nextConfig = {
   async headers() {
     return [
       {
         source: "/(.*)",
         headers: [
-          // 1. HSTS
+          // 1. HSTS only - remove CSP from here since middleware handles it
           {
             key: "Strict-Transport-Security",
             value: "max-age=63072000; includeSubDomains; preload",
           },
 
-          // 2. CSP
-          {
-            key: "Content-Security-Policy",
-            value: `
-              default-src 'self';
-              script-src 'self' https://apis.google.com;
-              style-src 'self' 'unsafe-inline';
-              img-src 'self' data:;
-              connect-src 'self';
-            `.replace(/\n/g, ""),
-          },
-
-          // 3. CORS (for API calls)
+          // 2. CORS (for API calls)
           {
             key: "Access-Control-Allow-Origin",
-            value: "https://your-frontend-domain.com",
+            value: process.env.NEXTAUTH_URL || "http://localhost:3000",
           },
           {
             key: "Access-Control-Allow-Methods",

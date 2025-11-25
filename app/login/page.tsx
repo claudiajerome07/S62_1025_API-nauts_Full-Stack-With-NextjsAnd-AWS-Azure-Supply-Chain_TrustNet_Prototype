@@ -14,40 +14,34 @@ export default function LoginPage() {
   const [sendOtp, setSendOtp] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [otp, setOtp] = useState("");
-  const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
+  const [confirmationResult, setConfirmationResult] =
+    useState<ConfirmationResult | null>(null);
   const [loading, setLoading] = useState(false);
-  const recaptchaInitialized = useRef(false);
+  const recaptchaContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Initialize reCAPTCHA when component mounts
+    setupRecaptcha();
+
+    // Cleanup on unmount
+    return () => {
+      if (window.recaptchaVerifier) {
+        try {
+          window.recaptchaVerifier.clear();
+        } catch (error) {
+          console.log("Error clearing reCAPTCHA:", error);
+        }
+      }
+    };
+  }, []);
 
   const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const numericValue = e.target.value.replace(/\D/g, "");
     setPhoneNumber(numericValue);
   };
 
-  // Safe console logging function to avoid Next.js errors
-  const safeLog = (message: string, data?: any) => {
+  const setupRecaptcha = () => {
     if (typeof window === "undefined") return;
-    
-    try {
-      if (data) {
-        // Convert to plain object to avoid Promise/enumeration issues
-        const plainData = JSON.parse(JSON.stringify(data, (key, value) => {
-          // Handle special cases
-          if (value instanceof Promise) return "[Promise]";
-          if (typeof value === "function") return "[Function]";
-          if (value instanceof HTMLElement) return "[HTMLElement]";
-          return value;
-        }));
-        console.log(message, plainData);
-      } else {
-        console.log(message);
-      }
-    } catch (error) {
-      console.log(message, "[Unable to serialize data]");
-    }
-  };
-
-  const setupRecaptcha = (): RecaptchaVerifier | null => {
-    if (typeof window === "undefined") return null;
 
     try {
       // Clear existing reCAPTCHA
@@ -55,38 +49,32 @@ export default function LoginPage() {
         try {
           window.recaptchaVerifier.clear();
         } catch (error) {
-          safeLog("Error clearing old reCAPTCHA:", error);
+          console.log("Error clearing old reCAPTCHA:", error);
         }
       }
 
-      safeLog("Initializing reCAPTCHA with auth:", { 
-        appName: auth.app?.name,
-        config: auth.app?.options 
-      });
-      
+      console.log("Initializing invisible reCAPTCHA...");
+
+      // Use INVISIBLE reCAPTCHA to avoid CSP issues
       window.recaptchaVerifier = new RecaptchaVerifier(
         auth,
         "recaptcha-container",
         {
-          size: "normal" as const,
+          size: "invisible", // CHANGED: Use invisible instead of normal
           callback: (response: string) => {
-            safeLog("reCAPTCHA solved:", response);
+            console.log("reCAPTCHA solved:", response);
           },
           "expired-callback": () => {
-            safeLog("reCAPTCHA expired");
-            toast.info("Security check expired. Please refresh and try again.");
+            console.log("reCAPTCHA expired");
+            toast.info("Security check expired. Please try again.");
           },
         }
       );
 
-      recaptchaInitialized.current = true;
-      safeLog("reCAPTCHA initialized successfully");
-      return window.recaptchaVerifier;
-
+      console.log("Invisible reCAPTCHA initialized successfully");
     } catch (error: any) {
-      safeLog("Error setting up reCAPTCHA:", error);
-      toast.error(`reCAPTCHA setup failed: ${error.message}`);
-      return null;
+      console.error("Error setting up reCAPTCHA:", error);
+      toast.error(`Security verification setup failed: ${error.message}`);
     }
   };
 
@@ -100,23 +88,23 @@ export default function LoginPage() {
 
     try {
       setLoading(true);
-      safeLog("Starting OTP send process...");
+      console.log("Starting OTP send process...");
 
-      // Initialize reCAPTCHA
-      const appVerifier = setupRecaptcha();
+      // Ensure reCAPTCHA is initialized
+      if (!window.recaptchaVerifier) {
+        setupRecaptcha();
+      }
+
+      const appVerifier = window.recaptchaVerifier;
       if (!appVerifier) {
-        toast.error("Security verification failed");
+        toast.error("Security verification failed to initialize");
         return;
       }
 
       const fullNumber = `+91${phoneNumber}`;
-      safeLog("Sending OTP to:", fullNumber);
-      safeLog("Using auth instance:", { 
-        appName: auth.app?.name,
-        configKeys: Object.keys(auth.app?.options || {}) 
-      });
-      safeLog("Using appVerifier type:", typeof appVerifier);
+      console.log("Sending OTP to:", fullNumber);
 
+      // Execute invisible reCAPTCHA and send OTP
       const confirmation = await signInWithPhoneNumber(
         auth,
         fullNumber,
@@ -126,40 +114,35 @@ export default function LoginPage() {
       setConfirmationResult(confirmation);
       setSendOtp(true);
       toast.success("OTP sent successfully!");
-      
     } catch (err: any) {
-      safeLog("Full error details:", {
+      console.error("OTP send error:", {
         code: err.code,
         message: err.message,
-        name: err.name
+        name: err.name,
       });
-      
+
+      // Reset reCAPTCHA on error
+      setupRecaptcha();
+
       // Specific handling for app credential issues
-      if (err.code === 'auth/invalid-app-credential') {
-        toast.error("Firebase configuration error. Please check:");
-        toast.error("1. Firebase Project Settings");
-        toast.error("2. Phone Auth is enabled");
-        toast.error("3. Authorized domains are set");
-        
-        // Log Firebase config status (safely)
-        safeLog("Firebase config status:", {
-          apiKey: !!process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-          authDomain: !!process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-          projectId: !!process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-          appId: !!process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-        });
+      if (err.code === "auth/invalid-app-credential") {
+        toast.error(
+          "Firebase configuration error. Please check project settings."
+        );
       } else {
         switch (err.code) {
-          case 'auth/invalid-phone-number':
+          case "auth/invalid-phone-number":
             toast.error("Invalid phone number format");
             break;
-          case 'auth/quota-exceeded':
+          case "auth/quota-exceeded":
             toast.error("Too many attempts. Please try again later.");
             break;
-          case 'auth/captcha-check-failed':
-            toast.error("Security verification failed. Please try again.");
+          case "auth/captcha-check-failed":
+            toast.error(
+              "Security verification failed. Please refresh and try again."
+            );
             break;
-          case 'auth/too-many-requests':
+          case "auth/too-many-requests":
             toast.error("Too many requests. Please try again later.");
             break;
           default:
@@ -190,7 +173,7 @@ export default function LoginPage() {
       const user = result.user;
       const idToken = await user.getIdToken();
 
-      safeLog("User authenticated:", { uid: user.uid });
+      console.log("User authenticated:", { uid: user.uid });
 
       const res = await fetch("/api/auth/verify-otp", {
         method: "POST",
@@ -209,14 +192,14 @@ export default function LoginPage() {
         toast.error(data.message || "Verification failed");
       }
     } catch (err: any) {
-      safeLog("Error verifying OTP:", {
+      console.error("Error verifying OTP:", {
         code: err.code,
-        message: err.message
+        message: err.message,
       });
-      
-      if (err.code === 'auth/invalid-verification-code') {
+
+      if (err.code === "auth/invalid-verification-code") {
         toast.error("Invalid OTP code");
-      } else if (err.code === 'auth/code-expired') {
+      } else if (err.code === "auth/code-expired") {
         toast.error("OTP has expired. Please request a new one.");
         setSendOtp(false);
       } else {
@@ -319,8 +302,8 @@ export default function LoginPage() {
             )}
           </button>
 
-          {/* reCAPTCHA container */}
-          <div id="recaptcha-container"></div>
+          {/* reCAPTCHA container - hidden since we're using invisible */}
+          <div id="recaptcha-container" className="hidden"></div>
         </form>
 
         <p className="text-gray-600 dark:text-gray-400 mt-6 text-xs sm:text-sm">

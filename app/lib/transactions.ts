@@ -14,7 +14,7 @@ export async function executeTransaction<T>(
   } = {}
 ): Promise<T> {
   const { maxRetries = 3, timeout = 5000 } = options;
-  let lastError: Error;
+  let lastError: Error | undefined;
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {

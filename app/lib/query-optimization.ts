@@ -1,5 +1,5 @@
 // lib/query-optimization.ts
-import { Prisma } from "@prisma/client";
+// import { Prisma } from "@prisma/client";
 
 /**
  * Optimized query builder with performance best practices

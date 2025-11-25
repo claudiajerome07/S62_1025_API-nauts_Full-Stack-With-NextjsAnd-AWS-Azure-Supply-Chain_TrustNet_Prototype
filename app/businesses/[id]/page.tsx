@@ -66,14 +66,20 @@ export default function BusinessProfilePage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (params.id) {
+    // Safely access params.id with null check
+    if (params?.id) {
       fetchBusiness();
     }
-  }, [params.id]);
+  }, [params?.id]);
 
   const fetchBusiness = async () => {
     try {
       setLoading(true);
+      // Safely access params.id with optional chaining and null check
+      if (!params?.id) {
+        throw new Error("Business ID not found");
+      }
+
       const response = await fetch(`/api/businesses/${params.id}`);
 
       if (!response.ok) {
@@ -134,7 +140,7 @@ export default function BusinessProfilePage() {
     isVerified,
     verificationMethod,
     upiVerified,
-    upiId,
+    // upiId,
     createdAt,
     owner,
     reviews,

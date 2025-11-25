@@ -1,19 +1,27 @@
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
 export default async function UsersPage() {
-  await new Promise((resolve) => setTimeout(resolve, 10000));
-  const res = await fetch("https://jsonplaceholder.typicode.com", {
-    cache: "no-store", 
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
+  const res = await fetch("https://jsonplaceholder.typicode.com/users", {
+    cache: "no-store",
   });
+
   if (!res.ok) {
     throw new Error("Failed to load user data");
   }
 
-  
-  const users = await res.json();
+  const users: User[] = await res.json();
+
   return (
     <div className="p-6 space-y-4">
       <h1 className="text-2xl font-bold">User List</h1>
       <ul className="space-y-2">
-        {users.map((user:Object) => (
+        {users.map((user) => (
           <li
             key={user.id}
             className="border rounded-lg p-4 shadow-sm hover:shadow-md transition"

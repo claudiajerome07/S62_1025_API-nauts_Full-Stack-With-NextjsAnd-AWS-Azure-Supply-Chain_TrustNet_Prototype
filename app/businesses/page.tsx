@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import BusinessCard from "@/components/BusinessCard";
 import { Search, Filter, Loader } from "lucide-react";
 
+// Use the full business type that matches what BusinessCard expects
 interface Business {
   id: string;
   name: string;
@@ -12,6 +13,14 @@ interface Business {
   location: string | null;
   trustScore: number;
   isVerified: boolean;
+  phone: string;
+  address: string | null;
+  createdAt: string;
+  updatedAt: string;
+  verificationMethod: string | null;
+  upiVerified: boolean;
+  upiId: string | null;
+  ownerId: string;
   owner: { name: string };
   _count: { reviews: number; endorsements: number };
 }
@@ -165,7 +174,7 @@ export default function BusinessesPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {businesses.map((business) => (
-              <BusinessCard key={business.id} business={business} />
+              <BusinessCard key={business.id} business={business as any} />
             ))}
           </div>
         )}
