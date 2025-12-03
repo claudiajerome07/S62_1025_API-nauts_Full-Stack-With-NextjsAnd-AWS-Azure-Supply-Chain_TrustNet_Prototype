@@ -1,210 +1,55 @@
 "use client";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 import { Toaster, toast } from "sonner";
-import { auth, RecaptchaVerifier, signInWithPhoneNumber } from "../../firebase";
-import type { ConfirmationResult } from "firebase/auth";
 
-declare global {
-  interface Window {
-    recaptchaVerifier: RecaptchaVerifier | undefined;
-  }
-}
+type ApiResponse = {
+  message?: string;
+  user?: {
+    id: string;
+    phone: string;
+    name: string;
+    role: string;
+  };
+  token?: string;
+  error?: string;
+  details?: any;
+};
 
 export default function LoginPage() {
-  const [sendOtp, setSendOtp] = useState(false);
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [otp, setOtp] = useState("");
-  const [confirmationResult, setConfirmationResult] =
-    useState<ConfirmationResult | null>(null);
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const recaptchaContainerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    // Initialize reCAPTCHA when component mounts
-    setupRecaptcha();
-
-    // Cleanup on unmount
-    return () => {
-      if (window.recaptchaVerifier) {
-        try {
-          window.recaptchaVerifier.clear();
-        } catch (error) {
-          console.log("Error clearing reCAPTCHA:", error);
-        }
-      }
-    };
-  }, []);
-
-  const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const numericValue = e.target.value.replace(/\D/g, "");
-    setPhoneNumber(numericValue);
-  };
-
-  const setupRecaptcha = () => {
-    if (typeof window === "undefined") return;
-
-    try {
-      // Clear existing reCAPTCHA
-      if (window.recaptchaVerifier) {
-        try {
-          window.recaptchaVerifier.clear();
-        } catch (error) {
-          console.log("Error clearing old reCAPTCHA:", error);
-        }
-      }
-
-      console.log("Initializing invisible reCAPTCHA...");
-
-      // Use INVISIBLE reCAPTCHA to avoid CSP issues
-      window.recaptchaVerifier = new RecaptchaVerifier(
-        auth,
-        "recaptcha-container",
-        {
-          size: "invisible", // CHANGED: Use invisible instead of normal
-          callback: (response: string) => {
-            console.log("reCAPTCHA solved:", response);
-          },
-          "expired-callback": () => {
-            console.log("reCAPTCHA expired");
-            toast.info("Security check expired. Please try again.");
-          },
-        }
-      );
-
-      console.log("Invisible reCAPTCHA initialized successfully");
-    } catch (error: any) {
-      console.error("Error setting up reCAPTCHA:", error);
-      toast.error(`Security verification setup failed: ${error.message}`);
-    }
-  };
-
-  const sendOtpFunction = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (phoneNumber.length < 10) {
-      toast.error("Please enter a valid 10-digit phone number");
-      return;
-    }
+    setLoading(true);
 
     try {
-      setLoading(true);
-      console.log("Starting OTP send process...");
-
-      // Ensure reCAPTCHA is initialized
-      if (!window.recaptchaVerifier) {
-        setupRecaptcha();
-      }
-
-      const appVerifier = window.recaptchaVerifier;
-      if (!appVerifier) {
-        toast.error("Security verification failed to initialize");
-        return;
-      }
-
-      const fullNumber = `+91${phoneNumber}`;
-      console.log("Sending OTP to:", fullNumber);
-
-      // Execute invisible reCAPTCHA and send OTP
-      const confirmation = await signInWithPhoneNumber(
-        auth,
-        fullNumber,
-        appVerifier
-      );
-
-      setConfirmationResult(confirmation);
-      setSendOtp(true);
-      toast.success("OTP sent successfully!");
-    } catch (err: any) {
-      console.error("OTP send error:", {
-        code: err.code,
-        message: err.message,
-        name: err.name,
-      });
-
-      // Reset reCAPTCHA on error
-      setupRecaptcha();
-
-      // Specific handling for app credential issues
-      if (err.code === "auth/invalid-app-credential") {
-        toast.error(
-          "Firebase configuration error. Please check project settings."
-        );
-      } else {
-        switch (err.code) {
-          case "auth/invalid-phone-number":
-            toast.error("Invalid phone number format");
-            break;
-          case "auth/quota-exceeded":
-            toast.error("Too many attempts. Please try again later.");
-            break;
-          case "auth/captcha-check-failed":
-            toast.error(
-              "Security verification failed. Please refresh and try again."
-            );
-            break;
-          case "auth/too-many-requests":
-            toast.error("Too many requests. Please try again later.");
-            break;
-          default:
-            toast.error(err.message || "Failed to send OTP");
-        }
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const verifyOtpFunction = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!otp || otp.length < 6) {
-      toast.error("Please enter a valid 6-digit OTP");
-      return;
-    }
-
-    if (!confirmationResult) {
-      toast.error("No OTP verification in progress. Please request a new OTP.");
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const result = await confirmationResult.confirm(otp);
-      const user = result.user;
-      const idToken = await user.getIdToken();
-
-      console.log("User authenticated:", { uid: user.uid });
-
-      const res = await fetch("/api/auth/verify-otp", {
+      const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ idToken }),
+        body: JSON.stringify({ phone, password }),
       });
 
-      const data = await res.json();
+      const data: ApiResponse = await response.json();
 
-      if (data.success) {
-        toast.success("Login successful!");
-        setTimeout(() => {
-          window.location.href = "/dashboard";
-        }, 1000);
-      } else {
-        toast.error(data.message || "Verification failed");
+      if (!response.ok) {
+        // Handle validation or backend errors
+        if (data.details) {
+          const fieldErrors = data.details
+            .map((error: any) => `${error.path.join(".")}: ${error.message}`)
+            .join(", ");
+          throw new Error(fieldErrors);
+        }
+        throw new Error(data.error || data.message || "Login failed");
       }
+
+      toast.success("Login successful! Redirecting...");
+      setTimeout(() => {
+        window.location.href = "/dashboard";
+      }, 1000);
     } catch (err: any) {
-      console.error("Error verifying OTP:", {
-        code: err.code,
-        message: err.message,
-      });
-
-      if (err.code === "auth/invalid-verification-code") {
-        toast.error("Invalid OTP code");
-      } else if (err.code === "auth/code-expired") {
-        toast.error("OTP has expired. Please request a new one.");
-        setSendOtp(false);
-      } else {
-        toast.error("Invalid OTP. Please try again.");
-      }
+      toast.error(err.message || "Login failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -223,10 +68,7 @@ export default function LoginPage() {
           </span>
         </p>
 
-        <form
-          className="flex flex-col gap-4"
-          onSubmit={sendOtp ? verifyOtpFunction : sendOtpFunction}
-        >
+        <form className="flex flex-col gap-4" onSubmit={handleLogin}>
           <div className="relative">
             <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
               +91
@@ -235,8 +77,10 @@ export default function LoginPage() {
               type="text"
               placeholder="Phone Number"
               required
-              value={phoneNumber}
-              onChange={handlePhoneNumberChange}
+              value={phone}
+              onChange={(e) =>
+                setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))
+              }
               maxLength={10}
               className="border border-gray-300 dark:border-gray-600 
                          bg-white dark:bg-gray-700 
@@ -246,21 +90,18 @@ export default function LoginPage() {
             />
           </div>
 
-          {sendOtp && (
-            <input
-              type="text"
-              placeholder="Enter 6-digit OTP"
-              required
-              value={otp}
-              onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-              maxLength={6}
-              className="border border-gray-300 dark:border-gray-600 
-                         bg-white dark:bg-gray-700 
-                         text-gray-900 dark:text-gray-100 
-                         rounded-lg px-4 py-2 sm:py-3 text-sm sm:text-base 
-                         focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-            />
-          )}
+          <input
+            type="password"
+            placeholder="Password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="border border-gray-300 dark:border-gray-600 
+                       bg-white dark:bg-gray-700 
+                       text-gray-900 dark:text-gray-100 
+                       rounded-lg px-4 py-2 sm:py-3 text-sm sm:text-base 
+                       focus:outline-none focus:ring-2 focus:ring-blue-500 transition w-full"
+          />
 
           <button
             type="submit"
@@ -272,38 +113,29 @@ export default function LoginPage() {
             } text-white font-medium py-2 sm:py-3 rounded-lg transition flex justify-center items-center gap-2 text-sm sm:text-base`}
           >
             {loading ? (
-              <>
-                <svg
-                  className="w-5 h-5 animate-spin text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                  ></path>
-                </svg>
-                {sendOtp ? "Verifying..." : "Sending..."}
-              </>
-            ) : sendOtp ? (
-              "Verify OTP"
-            ) : (
-              "Get OTP"
-            )}
+              <svg
+                className="w-5 h-5 animate-spin text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                ></path>
+              </svg>
+            ) : null}
+            {loading ? "Logging in..." : "Login"}
           </button>
-
-          {/* reCAPTCHA container - hidden since we're using invisible */}
-          <div id="recaptcha-container" className="hidden"></div>
         </form>
 
         <p className="text-gray-600 dark:text-gray-400 mt-6 text-xs sm:text-sm">

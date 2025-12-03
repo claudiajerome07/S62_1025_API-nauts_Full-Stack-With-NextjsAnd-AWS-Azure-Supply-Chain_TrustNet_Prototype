@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { redis } from "@/lib/redis";
 
+
+
 export async function GET() {
   try {
     const cacheKey = "users:list";
