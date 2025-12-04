@@ -5,6 +5,7 @@ import { createContext, useContext, useState, useEffect } from "react";
 interface AuthUser {
   uid: string;
   phone?: string;
+  role?: string;
   createdAt?: string;
   businessVerified?: boolean;
   [key: string]: any;
@@ -38,10 +39,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const savedFirebaseToken = localStorage.getItem("firebaseToken");
     const savedBackendToken = localStorage.getItem("backendToken");
     const savedUser = localStorage.getItem("user");
+    const savedAuthToken = localStorage.getItem("auth_token");
 
     if (savedFirebaseToken) setFirebaseToken(savedFirebaseToken);
     if (savedBackendToken) setBackendToken(savedBackendToken);
     if (savedUser) setUser(JSON.parse(savedUser));
+
+    // If we have a JWT token but no user data, try to decode it
+    if (savedAuthToken && !savedUser) {
+      try {
+        const tokenParts = savedAuthToken.split('.');
+        if (tokenParts.length === 3) {
+          const payload = JSON.parse(atob(tokenParts[1]));
+          setUser({
+            uid: payload.id,
+            role: payload.role,
+          });
+          setBackendToken(savedAuthToken);
+        }
+      } catch (error) {
+        console.error('Error decoding stored token:', error);
+        localStorage.removeItem("auth_token");
+      }
+    }
 
     setLoading(false);
   }, []);
@@ -63,7 +83,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("user", JSON.stringify(userData));
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      // Call the logout API to clear server-side cookie
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch (error) {
+      console.error("Logout API error:", error);
+    }
+
     setFirebaseToken(null);
     setBackendToken(null);
     setUser(null);
@@ -71,6 +98,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem("firebaseToken");
     localStorage.removeItem("backendToken");
     localStorage.removeItem("user");
+    localStorage.removeItem("auth_token"); // Clear JWT token
 
     window.location.href = "/login"; // redirect
   };

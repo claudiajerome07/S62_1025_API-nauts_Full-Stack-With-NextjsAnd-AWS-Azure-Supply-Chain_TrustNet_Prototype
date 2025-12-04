@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Toaster, toast } from "sonner";
 
 type ApiResponse = {
@@ -19,6 +20,7 @@ export default function LoginPage() {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,10 +46,23 @@ export default function LoginPage() {
         throw new Error(data.error || data.message || "Login failed");
       }
 
+      // Store token in localStorage for client-side access
+      if (data.token) {
+        localStorage.setItem('auth_token', data.token);
+        console.log('Token stored successfully:', data.token);
+        
+        // Verify token was stored
+        const storedToken = localStorage.getItem('auth_token');
+        console.log('Verified stored token:', storedToken ? 'exists' : 'NOT FOUND');
+      }
+
       toast.success("Login successful! Redirecting...");
+      
+      // Use Next.js router for navigation instead of window.location
       setTimeout(() => {
-        window.location.href = "/dashboard";
-      }, 1000);
+        console.log('About to redirect to dashboard');
+        router.push("/dashboard");
+      }, 1500); // Increased delay to ensure localStorage is updated
     } catch (err: any) {
       toast.error(err.message || "Login failed. Please try again.");
     } finally {

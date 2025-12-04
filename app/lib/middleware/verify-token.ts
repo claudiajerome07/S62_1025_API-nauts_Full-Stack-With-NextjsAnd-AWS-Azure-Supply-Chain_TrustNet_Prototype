@@ -9,9 +9,15 @@ export function verifyToken(req: NextRequest) {
       return { error: "Unauthorized: Token missing", status: 401 };
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as jwt.JwtPayload;
 
-    return { decoded };
+    // Add userId to decoded for easier access in API routes
+    return { 
+      decoded: {
+        ...decoded,
+        userId: decoded.id // Map 'id' to 'userId' for consistency
+      }
+    };
   } catch (error) {
     return { error: "Invalid or expired token", status: 401 };
   }

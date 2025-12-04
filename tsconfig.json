@@ -23,7 +23,9 @@
       }
     ],
     "paths": {
-      "@/*": ["./app/*"]
+      "@/*": ["./app/*"],
+      "@/context/*": ["./context/*"],
+      "@/components/*": ["./components/*"]
     }
   },
   "include": [

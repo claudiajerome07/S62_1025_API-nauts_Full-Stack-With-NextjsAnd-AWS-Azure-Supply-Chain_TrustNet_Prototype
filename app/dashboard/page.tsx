@@ -1,114 +1,146 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-
-interface DashboardStats {
-  trustScore: number;
-  totalReviews: number;
-  totalEndorsements: number;
-  monthlyVisits: number;
-}
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function DashboardPage() {
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setStats({
-        trustScore: 85,
-        totalReviews: 24,
-        totalEndorsements: 12,
-        monthlyVisits: 156
-      });
-      setLoading(false);
-    }, 1000);
+    // Add a small delay to ensure localStorage is ready
+    const timer = setTimeout(() => {
+      redirectBasedOnRole();
+    }, 100);
+
+    return () => clearTimeout(timer);
   }, []);
 
-  if (loading) {
-    return (
-      <div className="container mx-auto p-6">
-        <h1 className="text-3xl font-bold mb-6">Business Dashboard</h1>
-        <div className="animate-pulse space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[1, 2, 3, 4].map(i => (
-              <div key={i} className="bg-gray-200 h-32 rounded-lg"></div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const redirectBasedOnRole = async () => {
+    try {
+      console.log('Starting authentication check...');
+      
+      // First try to verify authentication via API (uses HTTP-only cookie)
+      const response = await fetch('/api/auth/verify');
+      console.log('Verify API response status:', response.status);
+      
+      if (!response.ok) {
+        console.log('API verification failed with status:', response.status);
+        
+        // Fallback to localStorage check
+        const token = localStorage.getItem('auth_token');
+        if (!token) {
+          console.log('No token in localStorage either, redirecting to login');
+          router.push('/login');
+          return;
+        }
+
+        // Basic token validation
+        const tokenParts = token.split('.');
+        if (tokenParts.length !== 3) {
+          console.log('Invalid token format, removing and redirecting');
+          localStorage.removeItem('auth_token');
+          router.push('/login');
+          return;
+        }
+
+        // Decode payload to get user role
+        const payload = JSON.parse(atob(tokenParts[1]));
+        console.log('User role from localStorage:', payload.role);
+        
+        redirectToRoleDashboard(payload.role);
+        return;
+      }
+
+      // API verification successful, get user data
+      const response_data = await response.json();
+      console.log('API response data:', JSON.stringify(response_data, null, 2));
+      
+      // Access the nested data structure from sendSuccess response
+      const data = response_data.data;
+      
+      if (!data || !data.user || !data.user.role) {
+        console.log('Invalid user data from API:', response_data);
+        console.log('data:', data);
+        console.log('data.user:', data?.user);
+        console.log('data.user.role:', data?.user?.role);
+        
+        // Fallback to localStorage check
+        const token = localStorage.getItem('auth_token');
+        if (!token) {
+          console.log('No token in localStorage either, redirecting to login');
+          router.push('/login');
+          return;
+        }
+
+        const tokenParts = token.split('.');
+        if (tokenParts.length !== 3) {
+          console.log('Invalid token format, removing and redirecting');
+          localStorage.removeItem('auth_token');
+          router.push('/login');
+          return;
+        }
+
+        const payload = JSON.parse(atob(tokenParts[1]));
+        console.log('User role from localStorage fallback:', payload.role);
+        redirectToRoleDashboard(payload.role);
+        return;
+      }
+      
+      console.log('User role from API:', data.user.role);
+      
+      // Also store in localStorage for client-side access
+      if (data.token) {
+        localStorage.setItem('auth_token', data.token);
+        console.log('Token stored in localStorage');
+      }
+      
+      console.log('About to redirect to role dashboard for role:', data.user.role);
+      redirectToRoleDashboard(data.user.role);
+      
+    } catch (error) {
+      console.error('Error verifying authentication:', error);
+      
+      // Clear any stored tokens and redirect to login
+      localStorage.removeItem('auth_token');
+      router.push('/login');
+    } finally {
+      console.log('Setting loading to false');
+      setIsLoading(false);
+    }
+  };
+
+  const redirectToRoleDashboard = (role: string) => {
+    console.log('redirectToRoleDashboard called with role:', role);
+    
+    switch (role) {
+      case 'BUSINESS_OWNER':
+        console.log('Redirecting to business dashboard');
+        router.push('/dashboard/business');
+        break;
+      case 'CUSTOMER':
+        console.log('Redirecting to customer dashboard');
+        router.push('/dashboard/customer');
+        break;
+      case 'ADMIN':
+        console.log('Redirecting to admin dashboard');
+        router.push('/dashboard/admin');
+        break;
+      default:
+        console.log('Unknown role, defaulting to customer dashboard');
+        // Default to customer dashboard
+        router.push('/dashboard/customer');
+        break;
+    }
+  };
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Business Dashboard</h1>
-        <Link 
-          href="/analytics" 
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          View Analytics
-        </Link>
-      </div>
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <h2 className="text-xl font-semibold mb-2 text-gray-700">Trust Score</h2>
-          <p className="text-3xl font-bold text-green-600">{stats?.trustScore}</p>
-          <p className="text-sm text-gray-600 mt-1">Your business credibility</p>
-        </div>
-        
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <h2 className="text-xl font-semibold mb-2 text-gray-700">Reviews</h2>
-          <p className="text-3xl font-bold text-blue-600">{stats?.totalReviews}</p>
-          <p className="text-sm text-gray-600 mt-1">Customer feedback</p>
-        </div>
-        
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <h2 className="text-xl font-semibold mb-2 text-gray-700">Endorsements</h2>
-          <p className="text-3xl font-bold text-purple-600">{stats?.totalEndorsements}</p>
-          <p className="text-sm text-gray-600 mt-1">Community support</p>
-        </div>
-        
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <h2 className="text-xl font-semibold mb-2 text-gray-700">Monthly Visits</h2>
-          <p className="text-3xl font-bold text-orange-600">{stats?.monthlyVisits}</p>
-          <p className="text-sm text-gray-600 mt-1">Profile views</p>
-        </div>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="bg-white rounded-lg shadow border p-6">
-        <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <Link 
-            href="/business/edit" 
-            className="bg-gray-100 hover:bg-gray-200 p-4 rounded-lg text-center transition-colors"
-          >
-            <h3 className="font-semibold text-gray-800">Edit Profile</h3>
-            <p className="text-sm text-gray-600">Update business information</p>
-          </Link>
-          
-          <Link 
-            href="/business/qr" 
-            className="bg-gray-100 hover:bg-gray-200 p-4 rounded-lg text-center transition-colors"
-          >
-            <h3 className="font-semibold text-gray-800">QR Code</h3>
-            <p className="text-sm text-gray-600">Share your digital card</p>
-          </Link>
-          
-          <Link 
-            href="/analytics" 
-            className="bg-gray-100 hover:bg-gray-200 p-4 rounded-lg text-center transition-colors"
-          >
-            <h3 className="font-semibold text-gray-800">View Analytics</h3>
-            <p className="text-sm text-gray-600">Detailed insights</p>
-          </Link>
-        </div>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <p className="text-gray-600">
+          {isLoading ? 'Redirecting to your dashboard...' : 'Loading...'}
+        </p>
       </div>
     </div>
   );
