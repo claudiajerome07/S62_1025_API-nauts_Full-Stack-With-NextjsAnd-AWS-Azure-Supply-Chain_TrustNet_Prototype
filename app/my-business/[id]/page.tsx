@@ -1,8 +1,10 @@
+// my-business/[id]/page.tsx - CORRECTED
 "use client";
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import BusinessReviews from "../../components/reviews/BusinessReview";
 
 interface Business {
   id: string;
@@ -48,27 +50,11 @@ const formatDateDDMMYYYY = (dateString: string | undefined): string => {
   }
 };
 
-// Helper function to format date with month name (for Created: Month Year)
-const formatMonthYear = (dateString: string | undefined): string => {
-  if (!dateString) return "N/A";
-  try {
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return "Invalid date";
-
-    const month = date.toLocaleDateString("en-US", { month: "short" });
-    const year = date.getFullYear();
-
-    return `${month} ${year}`;
-  } catch (error) {
-    return "Invalid date";
-  }
-};
-
 export default function ManageBusinessPage() {
   const params = useParams();
   const router = useRouter();
   const businessId = params.id as string;
-
+  const [isOwner, setIsOwner] = useState(true); // Business owner page = always owner
   const [business, setBusiness] = useState<Business | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -84,11 +70,7 @@ export default function ManageBusinessPage() {
       setLoading(true);
       setError(null);
 
-      console.log("Fetching business with ID:", businessId);
-
       const res = await fetch(`/api/businesses/my-business/${businessId}`);
-
-      console.log("API Response status:", res.status);
 
       if (!res.ok) {
         if (res.status === 404) {
@@ -101,7 +83,6 @@ export default function ManageBusinessPage() {
       }
 
       const data = await res.json();
-      console.log("Business API response:", data);
 
       if (data.success) {
         setBusiness(data.data);
@@ -438,7 +419,7 @@ export default function ManageBusinessPage() {
           </div>
         </div>
 
-        {/* Right Column - Actions */}
+        {/* Right Column - Actions & Reviews */}
         <div className="space-y-6">
           {/* Quick Actions */}
           <div className="bg-white rounded-xl shadow-sm border p-6">
@@ -471,12 +452,12 @@ export default function ManageBusinessPage() {
                 title="Analytics"
                 description="View detailed insights"
               />
-              <ActionLink
+              {/* <ActionLink
                 href={`/reviews?business=${businessId}`}
                 icon="💬"
                 title="Manage Reviews"
                 description="View & respond to reviews"
-              />
+              /> */}
             </div>
           </div>
 
@@ -510,6 +491,11 @@ export default function ManageBusinessPage() {
             )}
           </div>
         </div>
+      </div>
+
+      {/* Reviews Section - Placed below the main grid */}
+      <div className="mt-12">
+        <BusinessReviews businessId={businessId} isOwner={isOwner} />
       </div>
     </div>
   );

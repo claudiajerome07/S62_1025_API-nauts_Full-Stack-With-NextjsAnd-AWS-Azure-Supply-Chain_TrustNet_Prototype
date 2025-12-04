@@ -2,7 +2,15 @@
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Moon, Sun, User, LogOut, Settings, BarChart3 } from "lucide-react";
+import {
+  Moon,
+  Sun,
+  User,
+  LogOut,
+  Settings,
+  BarChart3,
+  UserCircle,
+} from "lucide-react";
 import { useAuth } from "@/context/authContext";
 import { useUI } from "@/context/UIContext";
 
@@ -19,63 +27,70 @@ function Navbar() {
 
   // Check authentication status
   useEffect(() => {
-    console.log('Navbar: Initial mount, checking auth status');
+    console.log("Navbar: Initial mount, checking auth status");
     checkAuthStatus();
-    
+
     // Listen for storage changes (when user logs in/out in another tab)
     const handleStorageChange = (e: StorageEvent) => {
-      console.log('Navbar: Storage event detected:', e.key, e.newValue ? 'token added' : 'token removed');
+      console.log(
+        "Navbar: Storage event detected:",
+        e.key,
+        e.newValue ? "token added" : "token removed"
+      );
       setTimeout(() => checkAuthStatus(), 100);
     };
-    
+
     // Listen for custom login event (for immediate updates)
     const handleLoginSuccess = (e: Event) => {
       const customEvent = e as CustomEvent;
-      console.log('Navbar: userLoggedIn event received:', customEvent.detail);
+      console.log("Navbar: userLoggedIn event received:", customEvent.detail);
       setTimeout(() => checkAuthStatus(), 200);
     };
-    
+
     // Listen for route changes
     const handleRouteChange = () => {
-      console.log('Navbar: Route change detected, checking auth');
-      if (sessionStorage.getItem('justLoggedIn') || localStorage.getItem('auth_token')) {
+      console.log("Navbar: Route change detected, checking auth");
+      if (
+        sessionStorage.getItem("justLoggedIn") ||
+        localStorage.getItem("auth_token")
+      ) {
         checkAuthStatus();
       }
     };
-    
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('userLoggedIn', handleLoginSuccess);
-    window.addEventListener('popstate', handleRouteChange);
-    
+
+    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("userLoggedIn", handleLoginSuccess);
+    window.addEventListener("popstate", handleRouteChange);
+
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('userLoggedIn', handleLoginSuccess);
-      window.removeEventListener('popstate', handleRouteChange);
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("userLoggedIn", handleLoginSuccess);
+      window.removeEventListener("popstate", handleRouteChange);
     };
   }, []);
 
   // Check for fresh login on page focus and route changes
   useEffect(() => {
     const handleFocus = () => {
-      console.log('Navbar: Window focus, checking for fresh login');
-      if (sessionStorage.getItem('justLoggedIn')) {
+      console.log("Navbar: Window focus, checking for fresh login");
+      if (sessionStorage.getItem("justLoggedIn")) {
         checkAuthStatus();
       }
     };
-    
-    window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
+
+    window.addEventListener("focus", handleFocus);
+    return () => window.removeEventListener("focus", handleFocus);
   }, []);
 
   // Check auth when pathname changes
   useEffect(() => {
-    console.log('Navbar: Router effect triggered');
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('auth_token');
-      const justLoggedIn = sessionStorage.getItem('justLoggedIn');
-      
+    console.log("Navbar: Router effect triggered");
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("auth_token");
+      const justLoggedIn = sessionStorage.getItem("justLoggedIn");
+
       if (token || justLoggedIn) {
-        console.log('Navbar: Token or login flag found, checking auth');
+        console.log("Navbar: Token or login flag found, checking auth");
         checkAuthStatus();
       }
     }
@@ -83,13 +98,13 @@ function Navbar() {
 
   // Check auth when component mounts or after navigation
   useEffect(() => {
-    console.log('Navbar: Pathname effect triggered');
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('auth_token');
-      const justLoggedIn = sessionStorage.getItem('justLoggedIn');
-      
+    console.log("Navbar: Pathname effect triggered");
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("auth_token");
+      const justLoggedIn = sessionStorage.getItem("justLoggedIn");
+
       if (token || justLoggedIn) {
-        console.log('Navbar: Token or login flag found, checking auth');
+        console.log("Navbar: Token or login flag found, checking auth");
         checkAuthStatus();
       }
     }
@@ -97,24 +112,24 @@ function Navbar() {
 
   const checkAuthStatus = async () => {
     try {
-      console.log('Navbar: checkAuthStatus called');
+      console.log("Navbar: checkAuthStatus called");
       setLoading(true);
-      
+
       // Check if user just logged in
-      const justLoggedIn = sessionStorage.getItem('justLoggedIn');
+      const justLoggedIn = sessionStorage.getItem("justLoggedIn");
       if (justLoggedIn) {
-        console.log('Navbar: Just logged in flag found, removing it');
-        sessionStorage.removeItem('justLoggedIn');
+        console.log("Navbar: Just logged in flag found, removing it");
+        sessionStorage.removeItem("justLoggedIn");
         // Force a slight delay to ensure token is properly set
-        await new Promise(resolve => setTimeout(resolve, 200));
+        await new Promise((resolve) => setTimeout(resolve, 200));
       }
-      
+
       // First check if we have a token in localStorage
-      const token = localStorage.getItem('auth_token');
-      console.log('Navbar: Token check:', token ? 'found' : 'not found');
-      
+      const token = localStorage.getItem("auth_token");
+      console.log("Navbar: Token check:", token ? "found" : "not found");
+
       if (!token) {
-        console.log('Navbar: No token found, setting unauthenticated');
+        console.log("Navbar: No token found, setting unauthenticated");
         setIsAuthenticated(false);
         setUserRole(null);
         setUserName(null);
@@ -122,27 +137,32 @@ function Navbar() {
       }
 
       // Verify token with the API
-      console.log('Navbar: Verifying token with API');
-      const response = await fetch('/api/auth/verify');
-      
+      console.log("Navbar: Verifying token with API");
+      const response = await fetch("/api/auth/verify");
+
       if (response.ok) {
         const result = await response.json();
         const userData = result.data;
-        
-        console.log('Navbar: Token verified successfully, user:', userData.user.name, 'role:', userData.user.role);
+
+        console.log(
+          "Navbar: Token verified successfully, user:",
+          userData.user.name,
+          "role:",
+          userData.user.role
+        );
         setIsAuthenticated(true);
         setUserRole(userData.user.role);
         setUserName(userData.user.name);
       } else {
         // Token is invalid
-        console.log('Navbar: Token verification failed, removing token');
-        localStorage.removeItem('auth_token');
+        console.log("Navbar: Token verification failed, removing token");
+        localStorage.removeItem("auth_token");
         setIsAuthenticated(false);
         setUserRole(null);
         setUserName(null);
       }
     } catch (error) {
-      console.error('Error checking auth status:', error);
+      console.error("Error checking auth status:", error);
       setIsAuthenticated(false);
       setUserRole(null);
       setUserName(null);
@@ -154,17 +174,20 @@ function Navbar() {
   // Close user menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(event.target as Node)
+      ) {
         setShowUserMenu(false);
       }
     };
 
     if (showUserMenu) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showUserMenu]);
 
@@ -177,21 +200,32 @@ function Navbar() {
     }
 
     // Clear client-side data
-    localStorage.removeItem('auth_token');
+    localStorage.removeItem("auth_token");
     setShowUserMenu(false);
     setIsAuthenticated(false);
     setUserRole(null);
     setUserName(null);
-    
+
     // Trigger custom logout event
-    window.dispatchEvent(new CustomEvent('userLoggedOut'));
-    
+    window.dispatchEvent(new CustomEvent("userLoggedOut"));
+
     // Also call the auth context logout for any Firebase cleanup
     authLogout();
   };
 
   const toggleUserMenu = () => {
     setShowUserMenu(!showUserMenu);
+  };
+
+  // Function to get profile URL based on user role
+  const getProfileUrl = () => {
+    if (userRole === "BUSINESS_OWNER") {
+      return "/profile";
+    } else if (userRole === "CUSTOMER") {
+      return "/profile";
+    } else {
+      return "/profile";
+    }
   };
 
   return (
@@ -221,20 +255,30 @@ function Navbar() {
                     className="flex items-center space-x-2 text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white font-medium px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors min-w-0"
                   >
                     <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
-                      {userName ? userName.charAt(0).toUpperCase() : 'U'}
+                      {userName ? userName.charAt(0).toUpperCase() : "U"}
                     </div>
                     <div className="hidden sm:flex sm:flex-col sm:items-start sm:min-w-0">
-                      <span className="text-sm font-medium truncate max-w-24 md:max-w-32">{userName || 'User'}</span>
+                      <span className="text-sm font-medium truncate max-w-24 md:max-w-32">
+                        {userName || "User"}
+                      </span>
                       {userRole && (
                         <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">
-                          {userRole === 'BUSINESS_OWNER' ? 'Business' : userRole === 'CUSTOMER' ? 'Customer' : 'Admin'}
+                          {userRole === "BUSINESS_OWNER"
+                            ? "Business"
+                            : userRole === "CUSTOMER"
+                              ? "Customer"
+                              : "Admin"}
                         </span>
                       )}
                     </div>
                     <div className="sm:hidden">
                       {userRole && (
                         <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded-full font-medium">
-                          {userRole === 'BUSINESS_OWNER' ? 'B' : userRole === 'CUSTOMER' ? 'C' : 'A'}
+                          {userRole === "BUSINESS_OWNER"
+                            ? "B"
+                            : userRole === "CUSTOMER"
+                              ? "C"
+                              : "A"}
                         </span>
                       )}
                     </div>
@@ -244,21 +288,45 @@ function Navbar() {
                   {showUserMenu && (
                     <div className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50 overflow-hidden">
                       <div className="p-3 border-b border-gray-200 dark:border-gray-700">
-                        <p className="font-medium text-gray-900 dark:text-white">{userName || 'User'}</p>
+                        <p className="font-medium text-gray-900 dark:text-white">
+                          {userName || "User"}
+                        </p>
                         <p className="text-sm text-gray-500 dark:text-gray-400 capitalize">
-                          {userRole ? userRole.replace('_', ' ').toLowerCase() : 'Customer'}
+                          {userRole
+                            ? userRole.replace("_", " ").toLowerCase()
+                            : "Customer"}
                         </p>
                       </div>
                       <div className="py-2">
+                        {/* Profile Link - ADDED THIS */}
                         <Link
-                          href={userRole === 'BUSINESS_OWNER' ? '/dashboard/business' : userRole === 'CUSTOMER' ? '/dashboard/customer' : '/dashboard'}
+                          href={getProfileUrl()}
+                          className="flex items-center px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                          onClick={() => setShowUserMenu(false)}
+                        >
+                          <UserCircle className="w-4 h-4 mr-2" />
+                          Profile
+                        </Link>
+
+                        <Link
+                          href={
+                            userRole === "BUSINESS_OWNER"
+                              ? "/dashboard/business"
+                              : userRole === "CUSTOMER"
+                                ? "/dashboard/customer"
+                                : "/dashboard"
+                          }
                           className="flex items-center px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                           onClick={() => setShowUserMenu(false)}
                         >
                           <BarChart3 className="w-4 h-4 mr-2" />
-                          {userRole === 'BUSINESS_OWNER' ? 'Business Dashboard' : userRole === 'CUSTOMER' ? 'Find Businesses' : 'Dashboard'}
+                          {userRole === "BUSINESS_OWNER"
+                            ? "Business Dashboard"
+                            : userRole === "CUSTOMER"
+                              ? "Find Businesses"
+                              : "Dashboard"}
                         </Link>
-                        {userRole === 'CUSTOMER' && (
+                        {userRole === "CUSTOMER" && (
                           <Link
                             href="/businesses"
                             className="flex items-center px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"

@@ -64,6 +64,10 @@ model Review {
   reviewerId String
   business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
   reviewer   User     @relation(fields: [reviewerId], references: [id], onDelete: Cascade)
+  ownerReply String?
+  repliedAt  DateTime?
+  reviewCount   Int   @default(0)
+  averageRating Float @default(0.0)
 
   @@index([businessId])
   @@index([rating])
