@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { 
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import {
   ArrowLeft,
   TrendingUp,
   TrendingDown,
@@ -16,8 +16,8 @@ import {
   Award,
   Phone,
   CreditCard,
-  AlertCircle
-} from 'lucide-react';
+  AlertCircle,
+} from "lucide-react";
 
 interface TrustScoreData {
   currentScore: number;
@@ -57,7 +57,7 @@ interface TrustScoreData {
     id: string;
     title: string;
     description: string;
-    impact: 'high' | 'medium' | 'low';
+    impact: "high" | "medium" | "low";
     action: string;
   }>;
 }
@@ -66,37 +66,36 @@ export default function TrustScorePage() {
   const [data, setData] = useState<TrustScoreData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    checkAuthentication();
+    // checkAuthentication();
   }, []);
 
   useEffect(() => {
-    if (isAuthenticated) {
-      fetchTrustScoreData();
-    }
-  }, [isAuthenticated]);
+    // if (isAuthenticated) {
+    fetchTrustScoreData();
+    // }
+  }, []);
 
   const checkAuthentication = () => {
     try {
-      const token = localStorage.getItem('backendToken');
+      const token = localStorage.getItem("backendToken");
       if (!token) {
-        router.push('/login');
+        router.push("/login");
         return;
       }
       // Basic token format validation
-      const tokenParts = token.split('.');
+      const tokenParts = token.split(".");
       if (tokenParts.length !== 3) {
-        localStorage.removeItem('backendToken');
-        router.push('/login');
+        localStorage.removeItem("backendToken");
+        router.push("/login");
         return;
       }
-      setIsAuthenticated(true);
+      // setIsAuthenticated(true); // This line is removed
     } catch (error) {
-      console.error('Authentication check failed:', error);
-      router.push('/login');
+      console.error("Authentication check failed:", error);
+      router.push("/login");
     }
   };
 
@@ -104,47 +103,49 @@ export default function TrustScorePage() {
     try {
       setLoading(true);
       setError(null);
-      
-      const response = await fetch('/api/dashboard/trust-score', {
+
+      const response = await fetch("/api/dashboard/trust-score", {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('backendToken')}`,
+          Authorization: `Bearer ${localStorage.getItem("backendToken")}`,
         },
       });
-      
+
       if (!response.ok) {
         if (response.status === 401) {
-          localStorage.removeItem('backendToken');
-          router.push('/login');
+          localStorage.removeItem("backendToken");
+          router.push("/login");
           return;
         }
         throw new Error(`Failed to fetch trust score data: ${response.status}`);
       }
-      
+
       const result = await response.json();
       if (!result.success) {
-        throw new Error(result.message || 'Failed to load trust score data');
+        throw new Error(result.message || "Failed to load trust score data");
       }
-      
+
       setData(result.data);
     } catch (err) {
-      console.error('Error fetching trust score data:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load trust score data');
+      console.error("Error fetching trust score data:", err);
+      setError(
+        err instanceof Error ? err.message : "Failed to load trust score data"
+      );
     } finally {
       setLoading(false);
-    };
+    }
   };
 
   // Don't render anything until authentication is checked
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Checking authentication...</p>
-        </div>
-      </div>
-    );
-  }
+  // if (!isAuthenticated) {
+  //   return (
+  //     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+  //       <div className="text-center">
+  //         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+  //         <p className="text-gray-600">Checking authentication...</p>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   if (loading) {
     return (
@@ -170,14 +171,16 @@ export default function TrustScorePage() {
       <div className="min-h-screen bg-gray-50">
         <div className="container mx-auto p-6">
           <div className="mb-6">
-            <Link 
-              href="/dashboard" 
+            <Link
+              href="/dashboard"
               className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-4"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Dashboard
             </Link>
-            <h1 className="text-3xl font-bold text-gray-900">Trust Score Details</h1>
+            <h1 className="text-3xl font-bold text-gray-900">
+              Trust Score Details
+            </h1>
           </div>
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
             <div className="flex">
@@ -204,14 +207,16 @@ export default function TrustScorePage() {
       <div className="min-h-screen bg-gray-50">
         <div className="container mx-auto p-6">
           <div className="mb-6">
-            <Link 
-              href="/dashboard" 
+            <Link
+              href="/dashboard"
               className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-4"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Dashboard
             </Link>
-            <h1 className="text-3xl font-bold text-gray-900">Trust Score Details</h1>
+            <h1 className="text-3xl font-bold text-gray-900">
+              Trust Score Details
+            </h1>
           </div>
           <div className="text-center py-12">
             <p className="text-gray-500">No trust score data available.</p>
@@ -229,15 +234,20 @@ export default function TrustScorePage() {
       <div className="container mx-auto p-6">
         {/* Header */}
         <div className="mb-6">
-          <Link 
-            href="/dashboard" 
+          <Link
+            href="/dashboard"
             className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-4"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Dashboard
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Trust Score Analysis</h1>
-          <p className="text-gray-600">Detailed breakdown of your business trust score and recommendations for improvement</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Trust Score Analysis
+          </h1>
+          <p className="text-gray-600">
+            Detailed breakdown of your business trust score and recommendations
+            for improvement
+          </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -246,28 +256,35 @@ export default function TrustScorePage() {
             {/* Current Score Overview */}
             <div className="bg-white rounded-lg shadow-sm border p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-gray-900">Current Trust Score</h2>
+                <h2 className="text-xl font-semibold text-gray-900">
+                  Current Trust Score
+                </h2>
                 <div className="flex items-center gap-2">
                   {isPositive ? (
                     <TrendingUp className="w-5 h-5 text-green-500" />
                   ) : (
                     <TrendingDown className="w-5 h-5 text-red-500" />
                   )}
-                  <span className={`text-sm font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
-                    {isPositive ? '+' : ''}{scoreChange} from last month
+                  <span
+                    className={`text-sm font-medium ${isPositive ? "text-green-600" : "text-red-600"}`}
+                  >
+                    {isPositive ? "+" : ""}
+                    {scoreChange} from last month
                   </span>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-6 mb-6">
                 <div className="text-center">
-                  <div className="text-5xl font-bold text-blue-600 mb-2">{data.currentScore}</div>
+                  <div className="text-5xl font-bold text-blue-600 mb-2">
+                    {data.currentScore}
+                  </div>
                   <div className="text-sm text-gray-500">Out of 100</div>
                 </div>
-                
+
                 <div className="flex-1">
                   <div className="w-full bg-gray-200 rounded-full h-4">
-                    <div 
+                    <div
                       className="bg-gradient-to-r from-blue-500 to-green-500 h-4 rounded-full transition-all duration-500"
                       style={{ width: `${data.currentScore}%` }}
                     ></div>
@@ -285,10 +302,14 @@ export default function TrustScorePage() {
                 <div className="flex items-start gap-2">
                   <Info className="w-5 h-5 text-blue-600 mt-0.5" />
                   <div>
-                    <h4 className="font-medium text-blue-900 mb-1">Trust Score Calculation</h4>
+                    <h4 className="font-medium text-blue-900 mb-1">
+                      Trust Score Calculation
+                    </h4>
                     <p className="text-sm text-blue-700">
-                      Your trust score is calculated based on customer reviews, community endorsements, 
-                      verification status, and profile engagement. Higher scores help customers find and trust your business.
+                      Your trust score is calculated based on customer reviews,
+                      community endorsements, verification status, and profile
+                      engagement. Higher scores help customers find and trust
+                      your business.
                     </p>
                   </div>
                 </div>
@@ -297,8 +318,10 @@ export default function TrustScorePage() {
 
             {/* Score Breakdown */}
             <div className="bg-white rounded-lg shadow-sm border p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-6">Score Breakdown</h3>
-              
+              <h3 className="text-lg font-semibold text-gray-900 mb-6">
+                Score Breakdown
+              </h3>
+
               <div className="space-y-6">
                 {/* Reviews Component */}
                 <div className="flex items-center justify-between p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
@@ -307,15 +330,22 @@ export default function TrustScorePage() {
                       <Star className="w-6 h-6 text-yellow-600" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-gray-900">Customer Reviews</h4>
+                      <h4 className="font-medium text-gray-900">
+                        Customer Reviews
+                      </h4>
                       <p className="text-sm text-gray-600">
-                        {data.breakdown.reviews.totalReviews} reviews • {data.breakdown.reviews.averageRating} average
+                        {data.breakdown.reviews.totalReviews} reviews •{" "}
+                        {data.breakdown.reviews.averageRating} average
                       </p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-2xl font-bold text-yellow-600">{data.breakdown.reviews.score}</div>
-                    <div className="text-sm text-gray-500">{data.breakdown.reviews.weight}% weight</div>
+                    <div className="text-2xl font-bold text-yellow-600">
+                      {data.breakdown.reviews.score}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      {data.breakdown.reviews.weight}% weight
+                    </div>
                   </div>
                 </div>
 
@@ -326,15 +356,24 @@ export default function TrustScorePage() {
                       <Users className="w-6 h-6 text-purple-600" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-gray-900">Community Endorsements</h4>
+                      <h4 className="font-medium text-gray-900">
+                        Community Endorsements
+                      </h4>
                       <p className="text-sm text-gray-600">
-                        {data.breakdown.endorsements.totalEndorsements} endorsements • {data.breakdown.endorsements.communityScore} community score
+                        {data.breakdown.endorsements.totalEndorsements}{" "}
+                        endorsements •{" "}
+                        {data.breakdown.endorsements.communityScore} community
+                        score
                       </p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-2xl font-bold text-purple-600">{data.breakdown.endorsements.score}</div>
-                    <div className="text-sm text-gray-500">{data.breakdown.endorsements.weight}% weight</div>
+                    <div className="text-2xl font-bold text-purple-600">
+                      {data.breakdown.endorsements.score}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      {data.breakdown.endorsements.weight}% weight
+                    </div>
                   </div>
                 </div>
 
@@ -345,7 +384,9 @@ export default function TrustScorePage() {
                       <Shield className="w-6 h-6 text-green-600" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-gray-900">Verification Status</h4>
+                      <h4 className="font-medium text-gray-900">
+                        Verification Status
+                      </h4>
                       <div className="flex items-center gap-3 mt-1">
                         <div className="flex items-center gap-1">
                           <Phone className="w-3 h-3" />
@@ -367,7 +408,9 @@ export default function TrustScorePage() {
                         </div>
                         <div className="flex items-center gap-1">
                           <Award className="w-3 h-3" />
-                          <span className="text-xs text-gray-600">Community</span>
+                          <span className="text-xs text-gray-600">
+                            Community
+                          </span>
                           {data.breakdown.verification.communityVerified ? (
                             <CheckCircle className="w-3 h-3 text-green-500" />
                           ) : (
@@ -378,8 +421,12 @@ export default function TrustScorePage() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-2xl font-bold text-green-600">{data.breakdown.verification.score}</div>
-                    <div className="text-sm text-gray-500">{data.breakdown.verification.weight}% weight</div>
+                    <div className="text-2xl font-bold text-green-600">
+                      {data.breakdown.verification.score}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      {data.breakdown.verification.weight}% weight
+                    </div>
                   </div>
                 </div>
 
@@ -390,15 +437,23 @@ export default function TrustScorePage() {
                       <TrendingUp className="w-6 h-6 text-blue-600" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-gray-900">Profile Engagement</h4>
+                      <h4 className="font-medium text-gray-900">
+                        Profile Engagement
+                      </h4>
                       <p className="text-sm text-gray-600">
-                        {data.breakdown.engagement.profileCompletion}% complete • {data.breakdown.engagement.responseRate}% response rate
+                        {data.breakdown.engagement.profileCompletion}% complete
+                        • {data.breakdown.engagement.responseRate}% response
+                        rate
                       </p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-2xl font-bold text-blue-600">{data.breakdown.engagement.score}</div>
-                    <div className="text-sm text-gray-500">{data.breakdown.engagement.weight}% weight</div>
+                    <div className="text-2xl font-bold text-blue-600">
+                      {data.breakdown.engagement.score}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      {data.breakdown.engagement.weight}% weight
+                    </div>
                   </div>
                 </div>
               </div>
@@ -409,22 +464,33 @@ export default function TrustScorePage() {
           <div className="space-y-6">
             {/* Recommendations */}
             <div className="bg-white rounded-lg shadow-sm border p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Improvement Recommendations</h3>
-              
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Improvement Recommendations
+              </h3>
+
               <div className="space-y-4">
                 {data.recommendations.map((rec) => (
-                  <div key={rec.id} className="border border-gray-200 rounded-lg p-4">
+                  <div
+                    key={rec.id}
+                    className="border border-gray-200 rounded-lg p-4"
+                  >
                     <div className="flex items-start justify-between mb-2">
                       <h4 className="font-medium text-gray-900">{rec.title}</h4>
-                      <span className={`text-xs px-2 py-1 rounded-full ${
-                        rec.impact === 'high' ? 'bg-red-100 text-red-700' :
-                        rec.impact === 'medium' ? 'bg-yellow-100 text-yellow-700' :
-                        'bg-green-100 text-green-700'
-                      }`}>
+                      <span
+                        className={`text-xs px-2 py-1 rounded-full ${
+                          rec.impact === "high"
+                            ? "bg-red-100 text-red-700"
+                            : rec.impact === "medium"
+                              ? "bg-yellow-100 text-yellow-700"
+                              : "bg-green-100 text-green-700"
+                        }`}
+                      >
                         {rec.impact} impact
                       </span>
                     </div>
-                    <p className="text-sm text-gray-600 mb-3">{rec.description}</p>
+                    <p className="text-sm text-gray-600 mb-3">
+                      {rec.description}
+                    </p>
                     <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
                       {rec.action} →
                     </button>
@@ -435,22 +501,31 @@ export default function TrustScorePage() {
 
             {/* Score History */}
             <div className="bg-white rounded-lg shadow-sm border p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Score History</h3>
-              
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Score History
+              </h3>
+
               <div className="space-y-3">
                 {data.scoreHistory.reverse().map((entry, index) => (
-                  <div key={entry.date} className="flex items-center justify-between">
+                  <div
+                    key={entry.date}
+                    className="flex items-center justify-between"
+                  >
                     <span className="text-sm text-gray-600">
                       {new Date(entry.date).toLocaleDateString()}
                     </span>
                     <div className="flex items-center gap-2">
-                      <span className="font-medium text-gray-900">{entry.score}</span>
+                      <span className="font-medium text-gray-900">
+                        {entry.score}
+                      </span>
                       {index < data.scoreHistory.length - 1 && (
-                        <div className={`w-2 h-2 rounded-full ${
-                          entry.score >= data.scoreHistory[index + 1].score 
-                            ? 'bg-green-500' 
-                            : 'bg-red-500'
-                        }`}></div>
+                        <div
+                          className={`w-2 h-2 rounded-full ${
+                            entry.score >= data.scoreHistory[index + 1].score
+                              ? "bg-green-500"
+                              : "bg-red-500"
+                          }`}
+                        ></div>
                       )}
                     </div>
                   </div>

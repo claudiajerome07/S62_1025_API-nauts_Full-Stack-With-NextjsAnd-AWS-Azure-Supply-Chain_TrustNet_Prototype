@@ -90,7 +90,7 @@ export default function MyBusinessesPage() {
               Try Again
             </button>
             <Link
-              href="/profile"
+              href="/dashboard/profile"
               className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
             >
               Back to Profile
@@ -117,7 +117,7 @@ export default function MyBusinessesPage() {
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
             <Link
-              href="/profile"
+              href="dashboard/profile"
               className="text-gray-500 hover:text-gray-700 flex items-center gap-1"
             >
               <svg
@@ -147,7 +147,7 @@ export default function MyBusinessesPage() {
 
         <div className="flex flex-wrap gap-3">
           <Link
-            href="/profile"
+            href="/dashboard/profile"
             className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
           >
             <svg
@@ -363,7 +363,7 @@ function EmptyState() {
       </p>
       <div className="flex flex-col sm:flex-row gap-3 justify-center">
         <Link
-          href="/profile"
+          href="/dashboard/profile"
           className="px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium inline-block"
         >
           ← Back to Profile

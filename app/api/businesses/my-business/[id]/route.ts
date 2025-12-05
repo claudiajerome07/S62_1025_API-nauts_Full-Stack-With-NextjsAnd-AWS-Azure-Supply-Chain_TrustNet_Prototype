@@ -156,7 +156,7 @@ export const PUT = protectedRoute(async (req: NextRequest) => {
         { 
           success: false, 
           error: "Validation failed",
-          details: error.errors 
+          details: error.issues 
         },
         { status: 400 }
       );

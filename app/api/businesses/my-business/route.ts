@@ -115,12 +115,12 @@ export const POST = protectedRoute(async (req: NextRequest) => {
     });
 
     // Update user role to BUSINESS_OWNER if not already
-    if (user?.role === "CUSTOMER") {
-      await prisma.user.update({
-        where: { id: userId },
-        data: { role: "BUSINESS_OWNER" },
-      });
-    }
+    // if (user?.role === "CUSTOMER") {
+    //   await prisma.user.update({
+    //     where: { id: userId },
+    //     data: { role: "BUSINESS_OWNER" },
+    //   });
+    // }
 
     return NextResponse.json({
       success: true,
@@ -133,7 +133,7 @@ export const POST = protectedRoute(async (req: NextRequest) => {
         {
           success: false,
           error: "Validation failed",
-          details: error.errors,
+          details: error.issues,
         },
         { status: 400 }
       );

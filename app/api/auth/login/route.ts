@@ -27,6 +27,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Compare hashed password
+    if (!user.password) {
+      return sendError("Incorrect password", "INVALID_CREDENTIALS", 401);
+    }
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return sendError("Incorrect password", "INVALID_CREDENTIALS", 401);

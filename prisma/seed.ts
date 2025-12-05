@@ -1,5 +1,5 @@
-// prisma/seed.ts
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, UserRole } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
@@ -15,13 +15,32 @@ async function main() {
   await prisma.business.deleteMany();
   await prisma.user.deleteMany();
 
-  // Create sample users
+  // Hash passwords
+  const adminPassword = await bcrypt.hash("admin123", 12);
+  const businessPassword = await bcrypt.hash("business123", 12);
+  const customerPassword = await bcrypt.hash("customer123", 12);
+
+  // 1. CREATE ADMIN USER (THIS IS MISSING IN YOUR SEED)
+  const adminUser = await prisma.user.upsert({
+    where: { phone: "+1234567890" },
+    update: {},
+    create: {
+      phone: "+1234567890",
+      name: "Admin User",
+      password: adminPassword,
+      email: "admin@trustnet.com",
+      role: UserRole.ADMIN,
+    },
+  });
+
+  // Create sample users WITH PASSWORDS
   const user1 = await prisma.user.upsert({
     where: { phone: "+919876543210" },
     update: {},
     create: {
       phone: "+919876543210",
       name: "Raj Sharma",
+      password: businessPassword,
       email: "raj@example.com",
       role: "BUSINESS_OWNER",
     },
@@ -33,6 +52,7 @@ async function main() {
     create: {
       phone: "+919876543211",
       name: "Priya Patel",
+      password: businessPassword,
       email: "priya@example.com",
       role: "BUSINESS_OWNER",
     },
@@ -44,6 +64,7 @@ async function main() {
     create: {
       phone: "+919876543212",
       name: "Amit Kumar",
+      password: customerPassword,
       email: "amit@example.com",
       role: "CUSTOMER",
     },
@@ -55,14 +76,20 @@ async function main() {
     create: {
       phone: "+919876543213",
       name: "Neha Singh",
+      password: customerPassword,
       email: "neha@example.com",
       role: "CUSTOMER",
     },
   });
 
-  console.log(
-    `Created users: ${user1.name}, ${user2.name}, ${customer1.name}, ${customer2.name}`
-  );
+  console.log(`
+  Created users:
+  1. ADMIN: ${adminUser.name} (Phone: ${adminUser.phone}, Password: admin123)
+  2. Business Owner: ${user1.name} (Phone: ${user1.phone}, Password: business123)
+  3. Business Owner: ${user2.name} (Phone: ${user2.phone}, Password: business123)
+  4. Customer: ${customer1.name} (Phone: ${customer1.phone}, Password: customer123)
+  5. Customer: ${customer2.name} (Phone: ${customer2.phone}, Password: customer123)
+  `);
 
   // Create sample businesses - REMOVE the hardcoded IDs, let Prisma generate them
   const business1 = await prisma.business.create({
@@ -231,14 +258,49 @@ async function main() {
 
   console.log(`Created 3 UPI transactions`);
 
-  console.log("Seeding finished successfully!");
-  console.log("Summary:");
-  console.log(`- Users: 4 (2 business owners, 2 customers)`);
-  console.log(`- Businesses: 2`);
-  console.log(`- Reviews: 3`);
-  console.log(`- Endorsements: 3`);
-  console.log(`- Analytics: 2`);
-  console.log(`- UPI Transactions: 3`);
+  console.log(`
+  ===========================================
+  🎉 SEEDING FINISHED SUCCESSFULLY!
+  ===========================================
+  
+  📋 TEST CREDENTIALS:
+  
+  1. ADMIN USER:
+     Phone: +1234567890
+     Password: admin123
+     Role: ADMIN
+     Email: admin@trustnet.com
+  
+  2. BUSINESS OWNER 1:
+     Phone: +919876543210
+     Password: business123
+     Name: Raj Sharma
+  
+  3. BUSINESS OWNER 2:
+     Phone: +919876543211
+     Password: business123
+     Name: Priya Patel
+  
+  4. CUSTOMER 1:
+     Phone: +919876543212
+     Password: customer123
+     Name: Amit Kumar
+  
+  5. CUSTOMER 2:
+     Phone: +919876543213
+     Password: customer123
+     Name: Neha Singh
+  
+  ===========================================
+  Summary:
+  - Users: 5 (1 admin, 2 business owners, 2 customers)
+  - Businesses: 2
+  - Reviews: 3
+  - Endorsements: 3
+  - Analytics: 2
+  - UPI Transactions: 3
+  ===========================================
+  `);
 }
 
 main()
