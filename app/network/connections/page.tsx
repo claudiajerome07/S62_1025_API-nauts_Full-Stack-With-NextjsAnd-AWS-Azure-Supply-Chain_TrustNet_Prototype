@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 
 type Connection = {
   id: string;
@@ -96,15 +95,6 @@ export default function NetworkConnections() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
   const [sortBy, setSortBy] = useState("recent");
-
-  const categories = [
-    "all",
-    "restaurant",
-    "retail",
-    "services",
-    "wellness",
-    "professional",
-  ];
 
   const filteredConnections = connections
     .filter((conn) => {

@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 type Business = {
   id: string;
@@ -39,8 +38,7 @@ type FilterState = {
 };
 
 export default function DiscoverPage() {
-  const router = useRouter();
-  const [businesses, setBusinesses] = useState<Business[]>([
+  const businesses: Business[] = [
     {
       id: "1",
       name: "GreenLeaf Cafe",
@@ -176,9 +174,9 @@ export default function DiscoverPage() {
       featured: true,
       imageColor: "bg-yellow-100",
     },
-  ]);
+  ];
 
-  const [categories, setCategories] = useState<Category[]>([
+  const categories: Category[] = [
     { id: "all", name: "All", icon: "📊", count: 156, color: "bg-gray-100" },
     {
       id: "food",
@@ -229,7 +227,7 @@ export default function DiscoverPage() {
       count: 28,
       color: "bg-yellow-100",
     },
-  ]);
+  ];
 
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState<FilterState>({

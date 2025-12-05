@@ -128,14 +128,15 @@ export async function POST(request: NextRequest) {
       return sendError(authResult.error, "UNAUTHORIZED", authResult.status || 401);
     }
 
-    const { userId, role } = authResult;
+    const { userId } = authResult;
 
-    // const { userId } = authResult; // Uncomment if needed
     const body = await request.json();
 
     // Validate request body
     const validatedSettings = settingsSchema.parse(body);
 
+    // TODO: Implement settings persistence for user: ${userId}
+    console.log(`Settings update for user: ${userId}`);
     // In a production app, you would save these settings to a user_settings table
     // For now, we'll just return success
     

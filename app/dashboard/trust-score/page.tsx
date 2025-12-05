@@ -78,27 +78,6 @@ export default function TrustScorePage() {
     // }
   }, []);
 
-  const checkAuthentication = () => {
-    try {
-      const token = localStorage.getItem("backendToken");
-      if (!token) {
-        router.push("/login");
-        return;
-      }
-      // Basic token format validation
-      const tokenParts = token.split(".");
-      if (tokenParts.length !== 3) {
-        localStorage.removeItem("backendToken");
-        router.push("/login");
-        return;
-      }
-      // setIsAuthenticated(true); // This line is removed
-    } catch (error) {
-      console.error("Authentication check failed:", error);
-      router.push("/login");
-    }
-  };
-
   const fetchTrustScoreData = async () => {
     try {
       setLoading(true);

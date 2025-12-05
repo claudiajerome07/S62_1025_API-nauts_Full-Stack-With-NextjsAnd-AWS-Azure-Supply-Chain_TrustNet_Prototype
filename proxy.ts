@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 // Export as named "proxy" function
-export function proxy(request: NextRequest) {
+export function proxy(_request: NextRequest) {
   const response = NextResponse.next();
 
   // Add CSP header that allows Firebase and reCAPTCHA

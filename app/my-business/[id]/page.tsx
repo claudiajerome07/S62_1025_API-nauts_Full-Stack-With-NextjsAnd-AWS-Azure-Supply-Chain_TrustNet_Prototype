@@ -53,8 +53,8 @@ const formatDateDDMMYYYY = (dateString: string | undefined): string => {
 export default function ManageBusinessPage() {
   const params = useParams();
   const router = useRouter();
-  const businessId = params.id as string;
-  const [isOwner, setIsOwner] = useState(true); // Business owner page = always owner
+  const businessId = params?.id as string;
+  const isOwner = true; // Business owner page = always owner
   const [business, setBusiness] = useState<Business | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -546,7 +546,7 @@ function StatCard({
   label: string;
   value: number;
   icon: string;
-  color: string;
+  color: "yellow" | "green" | "blue" | "purple";
 }) {
   const colorClasses = {
     yellow: "bg-yellow-50 border-yellow-100",

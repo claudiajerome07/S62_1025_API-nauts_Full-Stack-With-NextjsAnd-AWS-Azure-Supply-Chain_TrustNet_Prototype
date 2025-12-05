@@ -34,7 +34,7 @@ const categoryOptions = [
   { value: "STREET_VENDOR", label: "Street Vendor", icon: "🛒" },
   { value: "ARTISAN", label: "Artisan", icon: "🎨" },
   { value: "OTHER", label: "Other", icon: "📋" },
-];
+] as const;
 
 export default function CreateBusinessPage() {
   const router = useRouter();
@@ -66,7 +66,7 @@ export default function CreateBusinessPage() {
     }
   };
 
-  const handleCategorySelect = (category: string) => {
+  const handleCategorySelect = (category: "FOOD_RESTAURANT" | "RETAIL_SHOP" | "SERVICES" | "HOME_BUSINESS" | "STREET_VENDOR" | "ARTISAN" | "OTHER") => {
     setFormData((prev) => ({
       ...prev,
       category,
@@ -118,7 +118,7 @@ export default function CreateBusinessPage() {
       if (error instanceof z.ZodError) {
         // Handle frontend validation errors
         const newErrors: Record<string, string> = {};
-        error.errors.forEach((err) => {
+        error.issues.forEach((err) => {
           if (err.path[0]) {
             newErrors[err.path[0] as string] = err.message;
           }

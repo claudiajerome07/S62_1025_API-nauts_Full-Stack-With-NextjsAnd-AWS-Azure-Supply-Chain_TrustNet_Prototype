@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -32,13 +32,13 @@ type EndorsementStats = {
 export default function EndorsementsPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"given" | "received">("given");
-  const [stats, setStats] = useState<EndorsementStats>({
+  const stats: EndorsementStats = {
     totalGiven: 12,
     totalReceived: 8,
     pendingRequests: 3,
     activeEndorsements: 17,
     avgTrustScore: 89,
-  });
+  };
 
   const [givenEndorsements, setGivenEndorsements] = useState<Endorsement[]>([
     {

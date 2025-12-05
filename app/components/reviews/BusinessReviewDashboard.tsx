@@ -13,6 +13,9 @@ interface Review {
   ownerReply: string | null;
   repliedAt: string | null;
   createdAt: string;
+  updatedAt: string;
+  businessId: string;
+  reviewerId: string;
   reviewer?: { id: string; name: string | null };
   business?: { id: string; name: string };
 }

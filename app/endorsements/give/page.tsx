@@ -47,7 +47,7 @@ export default function GiveEndorsementPage() {
   });
 
   // Mock connections data
-  const [connections, setConnections] = useState<Connection[]>([
+  const connections: Connection[] = [
     {
       id: "1",
       name: "Sarah Thompson",
@@ -128,7 +128,7 @@ export default function GiveEndorsementPage() {
       location: "Austin, TX",
       lastInteraction: "2 weeks ago",
     },
-  ]);
+  ];
 
   const endorsementTypes: EndorsementType[] = [
     {

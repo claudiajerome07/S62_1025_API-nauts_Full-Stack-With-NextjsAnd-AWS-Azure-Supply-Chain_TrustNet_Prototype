@@ -39,7 +39,7 @@ const categoryOptions = [
 export default function EditBusinessPage() {
   const params = useParams();
   const router = useRouter();
-  const businessId = params.id as string;
+  const businessId = params?.id as string;
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -145,7 +145,7 @@ export default function EditBusinessPage() {
       if (error instanceof z.ZodError) {
         // Handle frontend validation errors
         const newErrors: Record<string, string> = {};
-        error.errors.forEach((err) => {
+        error.issues.forEach((err) => {
           if (err.path[0]) {
             newErrors[err.path[0] as string] = err.message;
           }

@@ -32,10 +32,10 @@ interface RatingDistributionItem {
   percentage: number;
 }
 
-interface ChartDataItem {
-  name: string;
-  reviews: number;
-}
+// interface ChartDataItem {
+//   name: string;
+//   reviews: number;
+// }
 
 export default function ReviewStats({ reviews }: ReviewStatsProps) {
   // Calculate statistics
@@ -75,10 +75,10 @@ export default function ReviewStats({ reviews }: ReviewStatsProps) {
     .slice(0, 5);
 
   // Format data for chart (if using recharts)
-  const chartData: ChartDataItem[] = ratingDistribution.map((item) => ({
-    name: `${item.rating}★`,
-    reviews: item.count,
-  }));
+  // const chartData: ChartDataItem[] = ratingDistribution.map((item) => ({
+  //   name: `${item.rating}★`,
+  //   reviews: item.count,
+  // }));
 
   // Simple star rendering function
   const renderStars = (rating: number, size: "sm" | "md" | "lg" = "md") => {

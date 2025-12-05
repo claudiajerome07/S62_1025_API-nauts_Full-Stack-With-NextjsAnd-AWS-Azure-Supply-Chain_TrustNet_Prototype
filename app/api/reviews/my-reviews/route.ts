@@ -103,18 +103,25 @@ export async function DELETE(request: NextRequest) {
       where: { id: reviewId },
     });
 
-    // Update business stats
+    // Update business analytics
     const stats = await prisma.review.aggregate({
       where: { businessId: review.businessId },
       _count: { rating: true },
       _avg: { rating: true },
     });
 
-    await prisma.business.update({
-      where: { id: review.businessId },
-      data: {
-        reviewCount: stats._count.rating,
+    await prisma.businessAnalytics.upsert({
+      where: { businessId: review.businessId },
+      update: {
+        totalReviews: stats._count.rating,
         averageRating: stats._avg.rating || 0,
+        lastUpdated: new Date(),
+      },
+      create: {
+        businessId: review.businessId,
+        totalReviews: stats._count.rating,
+        averageRating: stats._avg.rating || 0,
+        lastUpdated: new Date(),
       },
     });
 
