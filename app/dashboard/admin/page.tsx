@@ -89,6 +89,7 @@ export default function AdminDashboard() {
       setUserRole(userData.user.role);
     } catch (error) {
       console.error("Authentication error:", error);
+      setError("Authentication failed");
       router.push("/login");
     } finally {
       setLoading(false);

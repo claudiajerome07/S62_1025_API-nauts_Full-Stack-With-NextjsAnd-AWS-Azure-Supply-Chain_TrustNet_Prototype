@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -31,12 +31,12 @@ type SearchSuggestion = {
   type: "business" | "category" | "location" | "service";
 };
 
-export default function SearchPage() {
+function SearchPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  const initialQuery = searchParams.get("q") || "";
+  const initialQuery = searchParams?.get("q") || "";
 
   const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -902,5 +902,13 @@ export default function SearchPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SearchPageContent />
+    </Suspense>
   );
 }

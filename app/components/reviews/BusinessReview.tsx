@@ -3,7 +3,6 @@
 
 import { useState, useEffect } from "react";
 import ReviewCard from "./ReviewCard";
-import ReviewStats from "./ReviewStats";
 
 interface Review {
   id: string;

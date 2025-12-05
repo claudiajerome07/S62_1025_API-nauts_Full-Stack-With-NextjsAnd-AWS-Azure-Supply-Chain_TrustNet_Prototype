@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 
 type BusinessMarker = {
@@ -45,8 +44,6 @@ const calculateDistance = (
 };
 
 export default function MapPage() {
-  const router = useRouter();
-  const mapRef = useRef<HTMLDivElement>(null);
   const [userLocation, setUserLocation] = useState<{
     lat: number;
     lng: number;
@@ -67,7 +64,7 @@ export default function MapPage() {
   });
 
   // Mock business markers (simulated coordinates around a central point)
-  const [businessMarkers, setBusinessMarkers] = useState<BusinessMarker[]>([
+  const businessMarkers: BusinessMarker[] = [
     {
       id: "1",
       name: "GreenLeaf Cafe",
@@ -178,7 +175,7 @@ export default function MapPage() {
       isOpen: false,
       color: "bg-gray-500",
     },
-  ]);
+  ];
 
   const categories = [
     { id: "all", name: "All Categories", count: 156 },
@@ -317,7 +314,7 @@ export default function MapPage() {
             lng: position.coords.longitude,
           });
         },
-        (error) => {
+        (_error) => {
           alert(
             "Unable to get your location. Please enable location services."
           );

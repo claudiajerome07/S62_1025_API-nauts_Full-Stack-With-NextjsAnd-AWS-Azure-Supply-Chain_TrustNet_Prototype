@@ -59,7 +59,6 @@ export default function DashboardAnalyticsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [timeRange, setTimeRange] = useState("30days");
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -71,27 +70,6 @@ export default function DashboardAnalyticsPage() {
     fetchAnalyticsData();
     // }
   }, [timeRange]);
-
-  const checkAuthentication = () => {
-    try {
-      const token = localStorage.getItem("backendToken");
-      if (!token) {
-        router.push("/login");
-        return;
-      }
-      // Basic token format validation
-      const tokenParts = token.split(".");
-      if (tokenParts.length !== 3) {
-        localStorage.removeItem("backendToken");
-        router.push("/login");
-        return;
-      }
-      // setIsAuthenticated(true);
-    } catch (error) {
-      console.error("Authentication check failed:", error);
-      router.push("/login");
-    }
-  };
 
   const fetchAnalyticsData = async () => {
     try {

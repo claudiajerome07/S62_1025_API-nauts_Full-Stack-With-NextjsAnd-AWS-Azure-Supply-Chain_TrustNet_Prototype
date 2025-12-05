@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 type EndorsementRequest = {
@@ -27,7 +26,6 @@ type FilterState = {
 };
 
 export default function PendingRequestsPage() {
-  const router = useRouter();
   const [requests, setRequests] = useState<EndorsementRequest[]>([
     {
       id: "1",
@@ -102,12 +100,12 @@ export default function PendingRequestsPage() {
   const [filteredRequests, setFilteredRequests] = useState<
     EndorsementRequest[]
   >([]);
-  const [stats, setStats] = useState({
+  const stats = {
     totalPending: 4,
     expiringSoon: 1,
     avgRequesterScore: 89,
     responseRate: "75%",
-  });
+  };
 
   const [filters, setFilters] = useState<FilterState>({
     sortBy: "newest",

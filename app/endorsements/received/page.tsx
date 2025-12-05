@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 
 type Endorsement = {
@@ -122,13 +122,13 @@ export default function EndorsementsReceived() {
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterType, setFilterType] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("recent");
-  const [stats, setStats] = useState({
+  const stats = {
     total: 24,
     active: 18,
     pending: 3,
     archived: 3,
     thisMonth: 6,
-  });
+  };
 
   const statusOptions = [
     { value: "all", label: "All Status", color: "bg-gray-100 text-gray-800" },

@@ -31,7 +31,7 @@ type SkillOption = {
 export default function GiveEndorsementPage() {
   const params = useParams();
   const router = useRouter();
-  const businessId = params.businessId as string;
+  const businessId = params?.businessId as string;
 
   const [business, setBusiness] = useState<Business | null>(null);
   const [loading, setLoading] = useState(true);

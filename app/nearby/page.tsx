@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 type Business = {
@@ -32,7 +31,6 @@ type FilterState = {
 };
 
 export default function NearbyPage() {
-  const router = useRouter();
   const [userLocation, setUserLocation] = useState<{
     lat: number;
     lng: number;
@@ -42,7 +40,6 @@ export default function NearbyPage() {
   const [locationLoading, setLocationLoading] = useState(true);
 
   const [businesses, setBusinesses] = useState<Business[]>([]);
-  const [nearbyBusinesses, setNearbyBusinesses] = useState<Business[]>([]);
 
   const [filters, setFilters] = useState<FilterState>({
     category: "all",
@@ -324,34 +321,7 @@ export default function NearbyPage() {
     }
   }, [userLocation]);
 
-  // Update category counts
-  useEffect(() => {
-    const updatedCategories = categories.map((cat) => ({
-      ...cat,
-      count: businesses.filter(
-        (b) =>
-          cat.id === "all" ||
-          (cat.id === "food" && b.category === "Food & Drink") ||
-          (cat.id === "coffee" && b.category === "Coffee & Cafes") ||
-          (cat.id === "shopping" && b.category === "Shopping") ||
-          (cat.id === "services" && b.category === "Services") ||
-          (cat.id === "health" && b.category === "Health & Wellness") ||
-          (cat.id === "entertainment" && b.category === "Entertainment") ||
-          (cat.id === "other" &&
-            ![
-              "Food & Drink",
-              "Coffee & Cafes",
-              "Shopping",
-              "Services",
-              "Health & Wellness",
-              "Entertainment",
-            ].includes(b.category))
-      ).length,
-    }));
 
-    // Update categories state if needed, but we'll use it locally
-    return;
-  }, [businesses]);
 
   // Filter and sort businesses
   const filteredBusinesses = businesses
@@ -434,7 +404,7 @@ export default function NearbyPage() {
           setLocationError(null);
           setLocationLoading(false);
         },
-        (error) => {
+        (_error) => {
           setLocationError("Unable to retrieve your location");
           setLocationLoading(false);
         }
@@ -486,11 +456,6 @@ export default function NearbyPage() {
     if (distance < 0.1) return "< 0.1 mi";
     if (distance < 1) return `${distance.toFixed(1)} mi`;
     return `${distance.toFixed(1)} mi`;
-  };
-
-  const getCategoryIcon = (categoryId: string) => {
-    const cat = categories.find((c) => c.id === categoryId);
-    return cat ? cat.icon : "🏢";
   };
 
   return (

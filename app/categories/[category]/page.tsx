@@ -227,7 +227,7 @@ const categoryDatabase: Record<string, CategoryInfo> = {
 export default function CategoryPage() {
   const params = useParams();
   const router = useRouter();
-  const categoryId = params.category as string;
+  const categoryId = params?.category as string;
 
   const [category, setCategory] = useState<CategoryInfo | null>(null);
   const [businesses, setBusinesses] = useState<Business[]>([]);
@@ -754,7 +754,7 @@ export default function CategoryPage() {
               <div className="space-y-3">
                 {category.stats.topSubcategories
                   .slice(0, 5)
-                  .map((subcat, index) => (
+                  .map((subcat) => (
                     <Link
                       key={subcat}
                       href={`/search?q=${encodeURIComponent(subcat + " " + category.name.toLowerCase())}`}
